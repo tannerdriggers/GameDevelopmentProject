@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
-namespace MonoGameWindowsStarter
+namespace GameProject
 {
     /// <summary>
     /// This is the main type for your game.
@@ -11,6 +12,8 @@ namespace MonoGameWindowsStarter
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        Player player;
+        List<Enemy> enemies;
 
         public Game1()
         {
@@ -27,6 +30,8 @@ namespace MonoGameWindowsStarter
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            player = new Player(this);
+            enemies = new List<Enemy>();
 
             base.Initialize();
         }
@@ -39,6 +44,9 @@ namespace MonoGameWindowsStarter
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            Content.Load<Texture2D>("watery_cave_loop");
+            Content.Load<Texture2D>("bubbles");
 
             // TODO: use this.Content to load your game content here
         }
@@ -63,6 +71,13 @@ namespace MonoGameWindowsStarter
                 Exit();
 
             // TODO: Add your update logic here
+            player.Update(gameTime);
+            enemies.ForEach(
+                enemy =>
+                {
+                    enemy.Update(gameTime);
+                }
+            );
 
             base.Update(gameTime);
         }
@@ -74,6 +89,19 @@ namespace MonoGameWindowsStarter
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            spriteBatch.Begin();
+
+            player.Draw(spriteBatch);
+
+            enemies.ForEach(
+                enemy =>
+                {
+                    enemy.Draw(spriteBatch);
+                }
+            );
+
+            spriteBatch.End();
 
             // TODO: Add your drawing code here
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MonoGameWindowsStarter
+namespace GameProject
 {
 #if WINDOWS || LINUX
     /// <summary>
