@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System.Collections.Generic;
 
 namespace GameProject
@@ -8,12 +9,16 @@ namespace GameProject
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    class Game1 : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        public Texture2D fish;
+        public Texture2D fish_dart;
+        public Texture2D fish_big;
+
         Player player;
-        List<Enemy> enemies;
+        public List<Enemy> enemies;
 
         public Game1()
         {
@@ -45,8 +50,14 @@ namespace GameProject
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Content.Load<Texture2D>("watery_cave_loop");
+            Content.Load<Song>("watery_cave_loop");
             Content.Load<Texture2D>("bubbles");
+            
+            player.LoadContent(Content);
+
+            fish = Content.Load<Texture2D>("fish");
+            fish_big = Content.Load<Texture2D>("fish-big");
+            fish_dart = Content.Load<Texture2D>("fish-dart");
 
             // TODO: use this.Content to load your game content here
         }

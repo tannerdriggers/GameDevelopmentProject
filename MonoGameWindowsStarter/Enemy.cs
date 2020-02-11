@@ -10,12 +10,25 @@ using Microsoft.Xna.Framework.Content;
 
 namespace GameProject
 {
+    enum EnemyType
+    {
+        fish,
+        fish_big,
+        fish_dart
+    }
+
     class Enemy
     {
         Game1 game;
         Texture2D fish;
         Texture2D fish_big;
         Texture2D fish_dart;
+
+        public EnemyType enemyType;
+        public Vector2 position;
+        public int FRAME_WIDTH = 30;
+        public int FRAME_HEIGHT = 30;
+
 
         enum playerState {
             idle = 0,
@@ -26,13 +39,9 @@ namespace GameProject
         public Enemy(Game1 game)
         {
             this.game = game;
-        }
-
-        public void LoadContent(ContentManager Content)
-        {
-            fish = Content.Load<Texture2D>("fish");
-            fish_big = Content.Load<Texture2D>("fish_big");
-            fish_dart = Content.Load<Texture2D>("fish_dart");
+            Array values = Enum.GetValues(typeof(EnemyType));
+            Random random = new Random();
+            enemyType = (EnemyType)values.GetValue(random.Next(values.Length));
         }
 
         public void Update(GameTime gameTime)
@@ -43,9 +52,11 @@ namespace GameProject
         public void Draw(SpriteBatch spriteBatch)
         {
             // put all the fish in one spritesheet
-            spriteBatch.Draw(
-
-            );
+            //spriteBatch.Draw(
+            //    frame * FRAME_WIDTH,
+            //    new Vector2(100, 50),
+            //    Color.White
+            //);
         }
     }
 }
