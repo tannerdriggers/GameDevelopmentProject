@@ -2,7 +2,9 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 using System.Collections.Generic;
+using System;
 
 namespace GameProject
 {
@@ -16,9 +18,22 @@ namespace GameProject
         public Texture2D fish;
         public Texture2D fish_dart;
         public Texture2D fish_big;
+        public Texture2D bubblesTexture;
+        Song watery_cave_loop;
+        public SoundEffect bubblesSound;
+        SpriteFont scoreFont;
 
         Player player;
         public List<Enemy> enemies;
+        public List<Bubble> bubbles;
+        public bool gameFinished;
+
+        TimeSpan timer;
+        int respawnRate;
+        public int score;
+        Vector2 scorePosition;
+        string helpText = "Score points by avoiding the fish.\nPress Enter to Start.";
+        bool gameStarted = false;
 
         public Game1()
         {
@@ -34,9 +49,14 @@ namespace GameProject
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            gameFinished = false;
             player = new Player(this);
             enemies = new List<Enemy>();
+            bubbles = new List<Bubble>();
+
+            timer = new TimeSpan(0);
+            respawnRate = 500;
+            scorePosition = new Vector2(GraphicsDevice.Viewport.Width - 10, 10);
 
             base.Initialize();
         }
@@ -47,11 +67,12 @@ namespace GameProject
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Content.Load<Song>("watery_cave_loop");
-            Content.Load<Texture2D>("bubbles");
+            watery_cave_loop = Content.Load<Song>("watery_cave_loop");
+
+            bubblesTexture = Content.Load<Texture2D>("bubbles");
+            bubblesSound = Content.Load<SoundEffect>("Large Bubble");
             
             player.LoadContent(Content);
 
@@ -59,7 +80,7 @@ namespace GameProject
             fish_big = Content.Load<Texture2D>("fish-big");
             fish_dart = Content.Load<Texture2D>("fish-dart");
 
-            // TODO: use this.Content to load your game content here
+            scoreFont = Content.Load<SpriteFont>("score");
         }
 
         /// <summary>
@@ -81,14 +102,62 @@ namespace GameProject
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            if ((GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed 
+                || Keyboard.GetState().IsKeyDown(Keys.Enter))
+                && (!gameStarted || gameFinished))
+            {
+                gameStarted = true;
+                gameFinished = false;
+                score = 0;
+                helpText = "Score: ";
+                Initialize();
+            }
+
+            if (MediaPlayer.State == MediaState.Stopped)
+            {
+                MediaPlayer.Play(watery_cave_loop);
+            }
+            
             player.Update(gameTime);
-            enemies.ForEach(
-                enemy =>
+            if (!gameStarted)
+            {
+                var size = scoreFont.MeasureString(helpText + score.ToString());
+                scorePosition = new Vector2((GraphicsDevice.Viewport.Width / 2) - (size.X / 2), (GraphicsDevice.Viewport.Height / 2) - (size.Y / 2));
+            }
+            else if (!gameFinished)
+            {
+                timer += gameTime.ElapsedGameTime;
+
+                while (timer.TotalMilliseconds > respawnRate)
                 {
-                    enemy.Update(gameTime);
+                    timer -= new TimeSpan(0, 0, 0, 0, respawnRate);
+                    enemies.Add(new Enemy(this));
                 }
-            );
+
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    enemies[i].Update(gameTime);
+                    if (!enemies[i].alive)
+                    {
+                        enemies.Remove(enemies[i]);
+                        score++;
+                    }
+                }
+
+                for (int i = 0; i < bubbles.Count; i++)
+                {
+                    bubbles[i].Update(gameTime);
+                    if (!bubbles[i].alive)
+                    {
+                        bubbles.Remove(bubbles[i]);
+                    }
+                }
+                scorePosition = new Vector2(GraphicsDevice.Viewport.Width - scoreFont.MeasureString(helpText + score.ToString()).X - 20, 10);
+            }
+            else
+            {
+                EndGame();
+            }
 
             base.Update(gameTime);
         }
@@ -103,8 +172,6 @@ namespace GameProject
 
             spriteBatch.Begin();
 
-            player.Draw(spriteBatch);
-
             enemies.ForEach(
                 enemy =>
                 {
@@ -112,11 +179,30 @@ namespace GameProject
                 }
             );
 
+            bubbles.ForEach(
+                bubble =>
+                {
+                    bubble.Draw(spriteBatch);
+                }
+            );
+
+            player.Draw(spriteBatch);
+
+            spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), scorePosition, Color.Black);
+
             spriteBatch.End();
 
-            // TODO: Add your drawing code here
-
             base.Draw(gameTime);
+        }
+
+        private void EndGame()
+        {
+            enemies = new List<Enemy>();
+            bubbles = new List<Bubble>();
+
+            helpText = "Game Over! Press Enter to Play Again.\nYour Final Score is ";
+            var size = scoreFont.MeasureString(helpText + score.ToString());
+            scorePosition = new Vector2((GraphicsDevice.Viewport.Width / 2) - (size.X / 2), (GraphicsDevice.Viewport.Height / 2) - (size.Y / 2));
         }
     }
 }
