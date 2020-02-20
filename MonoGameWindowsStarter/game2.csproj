@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C491FCEF-8215-49C9-A42D-400F6594F660}</ProjectGuid>
+    <ProjectGuid>{51370AA0-4C9A-4604-999D-9AF3C7F85287}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MonoGameWindowsStarter</RootNamespace>
@@ -41,10 +41,12 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Bubble.cs" />
+    <Compile Include="Code\BubbleModel.cs" />
+    <Compile Include="Code\Bubble.cs" />
+    <Compile Include="Code\Enemy.cs" />
+    <Compile Include="Code\EnemyModel.cs" />
+    <Compile Include="Code\Player.cs" />
     <Compile Include="Game1.cs" />
-    <Compile Include="Enemy.cs" />
-    <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

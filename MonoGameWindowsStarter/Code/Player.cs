@@ -11,6 +11,9 @@ using Microsoft.Xna.Framework.Audio;
 
 namespace GameProject
 {
+    /// <summary>
+    /// The different states the player can be in
+    /// </summary>
     enum playerState {
         idle = 0,
         swimming = 1,
@@ -19,44 +22,44 @@ namespace GameProject
 
     class Player
     {
-        readonly Game1 game;
-        Texture2D playerSpriteSheet;
-        playerState playerState;
-        TimeSpan timer;
-        Vector2 position;
-        int frame;
-        SpriteEffects effect;
-        SoundEffect playerDeathSound;
+        private readonly Game1 game;
+        private Texture2D playerSpriteSheet;
+        private playerState playerState;
+        private TimeSpan timer;
+        private Vector2 position;
+        private int frame;
+        private SpriteEffects effect;
+        private SoundEffect playerDeathSound;
 
         /// <summary>
         /// Speed of the player
         /// </summary>
-        const float PLAYER_SPEED = 250;
+        private const float PLAYER_SPEED = 250;
 
         /// <summary>
         /// Width of a single sprite in the spritesheet
         /// </summary>
-        const int FRAME_WIDTH = 80;
+        private const int FRAME_WIDTH = 80;
 
         /// <summary>
         /// Height of a single sprite in the spritesheet
         /// </summary>
-        const int FRAME_HEIGHT = 80;
+        private const int FRAME_HEIGHT = 80;
 
         /// <summary>
         /// How fast the sprite animations switch
         /// </summary>
-        const int ANIMATION_FRAME_RATE = 124;
+        private const int ANIMATION_FRAME_RATE = 124;
 
         /// <summary>
         /// Size of the player
         /// </summary>
-        float scale = 1f;
+        private float scale = 1f;
 
-        const int BOTTOM_COLLISION_OFFSET = 52;
-        const int TOP_COLLISION_OFFSET2 = 3;
-        const int RIGHT_COLLISION_OFFSET = 55;
-        const int LEFT_COLLISION_OFFSET2 = 7;
+        private const int BOTTOM_COLLISION_OFFSET = 52;
+        private const int TOP_COLLISION_OFFSET2 = 3;
+        private const int RIGHT_COLLISION_OFFSET = 55;
+        private const int LEFT_COLLISION_OFFSET2 = 7;
 
         public Player(Game1 game)
         {
@@ -72,6 +75,15 @@ namespace GameProject
         {
             playerSpriteSheet = Content.Load<Texture2D>("player");
             playerDeathSound = Content.Load<SoundEffect>("death");
+        }
+
+        public void UnloadContent()
+        {
+            if (playerSpriteSheet != null)
+            {
+                playerSpriteSheet.Dispose();
+                playerDeathSound.Dispose();
+            }
         }
 
         public void Update(GameTime gameTime)
@@ -122,15 +134,7 @@ namespace GameProject
                     effect = SpriteEffects.None;
                 }
 
-                if (game.enemies.Exists(
-                    enemy =>
-                    {
-                        return (enemy.position.X < position.X + FRAME_WIDTH - RIGHT_COLLISION_OFFSET    // player right side
-                              && enemy.position.X + enemy.FRAME_WIDTH > position.X + LEFT_COLLISION_OFFSET2                 // player left side
-                              && enemy.position.Y < position.Y + FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET  // player bottom
-                              && enemy.position.Y + enemy.FRAME_HEIGHT > position.Y - TOP_COLLISION_OFFSET2);              // player top
-                    })
-                )
+                if (Collision())
                 {
                     playerState = playerState.hurt;
                     effect = SpriteEffects.None;
@@ -160,6 +164,27 @@ namespace GameProject
                 frame %= 5;
             else
                 frame %= 7;
+        }
+
+        /// <summary>
+        /// Collision using spacial partitioning
+        /// </summary>
+        /// <returns>If the player collides with an Enemy</returns>
+        private bool Collision()
+        {
+            return game
+                .enemyFlyweight
+                .enemies
+                .AsQueryable()
+                .Where(enemy => enemy.position.Y < position.Y + FRAME_HEIGHT + 20 && enemy.position.Y + enemy.FRAME_HEIGHT + 20 > position.Y)
+                .ToList()
+                .Exists(enemy =>
+                    {
+                        return (enemy.position.X < position.X + FRAME_WIDTH - RIGHT_COLLISION_OFFSET                          // player right side
+                                && enemy.position.X + enemy.FRAME_WIDTH > position.X + LEFT_COLLISION_OFFSET2                 // player left side
+                                && enemy.position.Y < position.Y + FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET                     // player bottom
+                                && enemy.position.Y + enemy.FRAME_HEIGHT > position.Y - TOP_COLLISION_OFFSET2);               // player top
+                    });
         }
 
         public void Draw(SpriteBatch spriteBatch)
