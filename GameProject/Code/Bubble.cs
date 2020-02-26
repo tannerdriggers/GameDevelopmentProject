@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
 
-namespace GameProject
+namespace GameProject.Code
 {
     /// <summary>
     /// Bubble Flyweight
@@ -87,7 +87,7 @@ namespace GameProject
         public void Draw(SpriteBatch spriteBatch)
         {
             Rectangle source;
-            bubbles.ForEach(bubble =>
+            game.bubbleFlyweight.bubbles.ForEach(bubble =>
             {
                 source = new Rectangle(
                     bubble.frame * FRAME_WIDTH,

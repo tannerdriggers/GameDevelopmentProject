@@ -9,8 +9,8 @@
     <ProjectGuid>{51370AA0-4C9A-4604-999D-9AF3C7F85287}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MonoGameWindowsStarter</RootNamespace>
-    <AssemblyName>MonoGameWindowsStarter</AssemblyName>
+    <RootNamespace>GameProject</RootNamespace>
+    <AssemblyName>GameProject</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MonoGamePlatform>Windows</MonoGamePlatform>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -41,6 +41,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Code\Background.cs" />
+    <Compile Include="Code\BackgroundModel.cs" />
+    <Compile Include="Code\BoundingRectangle.cs" />
     <Compile Include="Code\BubbleModel.cs" />
     <Compile Include="Code\Bubble.cs" />
     <Compile Include="Code\Enemy.cs" />

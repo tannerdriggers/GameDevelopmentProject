@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Audio;
 
-namespace GameProject
+namespace GameProject.Code
 {
     /// <summary>
     /// The different states the player can be in
@@ -22,11 +22,12 @@ namespace GameProject
 
     class Player
     {
+        public Vector2 position;
+
         private readonly Game1 game;
         private Texture2D playerSpriteSheet;
         private playerState playerState;
         private TimeSpan timer;
-        private Vector2 position;
         private int frame;
         private SpriteEffects effect;
         private SoundEffect playerDeathSound;
@@ -54,7 +55,7 @@ namespace GameProject
         /// <summary>
         /// Size of the player
         /// </summary>
-        private float scale = 1f;
+        public float scale = 1f;
 
         private const int BOTTOM_COLLISION_OFFSET = 52;
         private const int TOP_COLLISION_OFFSET2 = 3;
@@ -91,6 +92,7 @@ namespace GameProject
             KeyboardState keyboard = Keyboard.GetState();
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            // State pattern
             if (!game.gameFinished)
             {
                 if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
@@ -108,17 +110,16 @@ namespace GameProject
                     position.Y -= delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
-
-                if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A))
-                    && position.X > 0)
+#if DEBUG
+                if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
                 {
                     playerState = playerState.swimming;
                     position.X -= delta * PLAYER_SPEED;
                     effect = SpriteEffects.FlipHorizontally;
                 }
+#endif
 
-                if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D))
-                    && position.X < game.GraphicsDevice.Viewport.Width - (FRAME_WIDTH - RIGHT_COLLISION_OFFSET))
+                if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
                 {
                     playerState = playerState.swimming;
                     position.X += delta * PLAYER_SPEED;

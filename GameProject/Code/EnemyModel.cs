@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 
-namespace GameProject
+namespace GameProject.Code
 {
     /// <summary>
     /// The different types of Enemies
@@ -50,7 +50,7 @@ namespace GameProject
             enemyFlyweight.SetWidthHeightSpeed(this);
 
             timer = new TimeSpan(0);
-            position = new Vector2(game.GraphicsDevice.Viewport.Width + FRAME_WIDTH, enemyFlyweight.random.Next(game.GraphicsDevice.Viewport.Height - 10));
+            position = new Vector2(game.GraphicsDevice.Viewport.Width + FRAME_WIDTH + game.player.position.X, enemyFlyweight.random.Next(game.GraphicsDevice.Viewport.Height - 10));
 
             frame = 0;
         }

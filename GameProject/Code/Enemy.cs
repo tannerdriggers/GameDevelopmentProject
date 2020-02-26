@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameProject
+namespace GameProject.Code
 {
     /// <summary>
     /// Enemy Flyweight
@@ -29,13 +29,11 @@ namespace GameProject
 
         public Game1 game;
 
-        private Bubble bubbleFlyweight;
-
         public Enemy(Game1 game)
         {
             this.game = game;
             enemies = new List<EnemyModel>();
-            bubbleFlyweight = game.bubbleFlyweight;
+            game.bubbleFlyweight = game.bubbleFlyweight;
         }
 
         /// <summary>
@@ -123,12 +121,12 @@ namespace GameProject
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
-                if (enemy.position.X > 0 - (enemy.FRAME_WIDTH + 5))
+                if (enemy.position.X > -game.worldOffset.X - (enemy.FRAME_WIDTH + 5))
                 {
-                    var randomBubbles = random.Next(100);
+                    var randomBubbles = random.Next(1000);
                     if (randomBubbles == 0)
                     {
-                        bubbleFlyweight.bubbles.Add(new BubbleModel(game, enemy.position));
+                        game.bubbleFlyweight.bubbles.Add(new BubbleModel(game, enemy.position));
                     }
 
                     if (!enemy.debug)

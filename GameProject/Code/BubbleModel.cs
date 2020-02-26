@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 
-namespace GameProject
+namespace GameProject.Code
 {
     /// <summary>
     /// Model for Bubbles
@@ -30,7 +30,10 @@ namespace GameProject
             position.Y -= bubbleFlyweight.FRAME_HEIGHT;
             this.position = position;
             frame = 0;
+#if DEBUG
+#else
             bubbleFlyweight.bubblesSound.Play();
+#endif
         }
     }
 }

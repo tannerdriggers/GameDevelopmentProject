@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Audio;
 using System.Collections.Generic;
 using System;
 
+using GameProject.Code;
+
 namespace GameProject
 {
     /// <summary>
@@ -15,14 +17,15 @@ namespace GameProject
     {
         public bool gameFinished;
         public int score;
-
+        public Vector2 worldOffset;
         public Enemy enemyFlyweight;
         public Bubble bubbleFlyweight;
+        public Background backgroundFlyweight;
+        public Player player;
 
         private SpriteBatch spriteBatch;
         private Song watery_cave_loop;
         private SpriteFont scoreFont;
-        private Player player;
         private TimeSpan timer;
         private int respawnRate;
         private Vector2 scorePosition;
@@ -44,10 +47,15 @@ namespace GameProject
         protected override void Initialize()
         {
             gameFinished = false;
-            player = new Player(this);
+
+            if (player == null)
+                player = new Player(this);
+
+            player.scale = 1f;
 
             enemyFlyweight = new Enemy(this);
             bubbleFlyweight = new Bubble(this);
+            backgroundFlyweight = new Background(this);
 
             timer = new TimeSpan(0);
             respawnRate = 400;
@@ -68,6 +76,7 @@ namespace GameProject
             enemyFlyweight.LoadContent(Content);
             player.LoadContent(Content);
             scoreFont = Content.Load<SpriteFont>("score");
+            backgroundFlyweight.LoadContent();
         }
 
         /// <summary>
@@ -104,12 +113,16 @@ namespace GameProject
                 Initialize();
             }
 
+#if DEBUG
+#else
             if (MediaPlayer.State == MediaState.Stopped)
             {
                 MediaPlayer.Play(watery_cave_loop);
             }
-            
+#endif
+
             player.Update(gameTime);
+            backgroundFlyweight.Update(gameTime);
             if (!gameStarted)
             {
                 var size = scoreFont.MeasureString(helpText + score.ToString());
@@ -148,13 +161,19 @@ namespace GameProject
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // Begin Drawing
-            spriteBatch.Begin();
+            // Calculate and apply the world/view transform
+            worldOffset = new Vector2(100, 0) - new Vector2(player.position.X, 0);
+            var t = Matrix.CreateTranslation(worldOffset.X, worldOffset.Y, 0);
 
+            // Begin Drawing
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, t);
+
+            backgroundFlyweight.Draw(spriteBatch);
             enemyFlyweight.Draw(spriteBatch);
             bubbleFlyweight.Draw(spriteBatch);
             player.Draw(spriteBatch);
-            spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), scorePosition, Color.Black);
+            spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), new Vector2(scorePosition.X - 2, scorePosition.Y) - worldOffset, Color.Black);
+            spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), scorePosition - worldOffset, Color.White);
 
             // End Drawing
             spriteBatch.End();
