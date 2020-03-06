@@ -48,6 +48,8 @@ namespace GameProject
         {
             gameFinished = false;
 
+            worldOffset = new Vector2(50, 0);
+
             if (player == null)
                 player = new Player(this);
 
@@ -70,6 +72,10 @@ namespace GameProject
         /// </summary>
         protected override void LoadContent()
         {
+#if DEBUG
+            VisualDebugging.LoadContent(Content);
+#endif
+
             spriteBatch = new SpriteBatch(GraphicsDevice);
             watery_cave_loop = Content.Load<Song>("watery_cave_loop");
             bubbleFlyweight.LoadContent(Content);
@@ -77,6 +83,9 @@ namespace GameProject
             player.LoadContent(Content);
             scoreFont = Content.Load<SpriteFont>("score");
             backgroundFlyweight.LoadContent();
+
+            enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(50, 200)));
+            player.playerState = playerState.swimming;
         }
 
         /// <summary>
@@ -130,6 +139,8 @@ namespace GameProject
             }
             else if (!gameFinished)
             {
+                // world goes to the right one pixel every update
+                worldOffset.X--;
                 timer += gameTime.ElapsedGameTime;
 
                 while (timer.TotalMilliseconds > respawnRate)
@@ -162,7 +173,7 @@ namespace GameProject
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Calculate and apply the world/view transform
-            worldOffset = new Vector2(100, 0) - new Vector2(player.position.X, 0);
+            //worldOffset = new Vector2(100, 0) - new Vector2(player.position.X, 0);
             var t = Matrix.CreateTranslation(worldOffset.X, worldOffset.Y, 0);
 
             // Begin Drawing

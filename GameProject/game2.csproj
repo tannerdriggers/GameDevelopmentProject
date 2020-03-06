@@ -49,6 +49,7 @@
     <Compile Include="Code\Enemy.cs" />
     <Compile Include="Code\EnemyModel.cs" />
     <Compile Include="Code\Player.cs" />
+    <Compile Include="Code\VisualDebugging.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

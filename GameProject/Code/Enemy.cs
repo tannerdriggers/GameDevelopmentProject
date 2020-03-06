@@ -33,7 +33,6 @@ namespace GameProject.Code
         {
             this.game = game;
             enemies = new List<EnemyModel>();
-            game.bubbleFlyweight = game.bubbleFlyweight;
         }
 
         /// <summary>
@@ -164,6 +163,16 @@ namespace GameProject.Code
                     enemy.FRAME_HEIGHT
                 );
 
+                VisualDebugging.DrawRectangle(
+                    spriteBatch, 
+                    new Rectangle(
+                        (int)enemy.position.X - (enemy.FRAME_WIDTH / 2), 
+                        (int)enemy.position.Y - (enemy.FRAME_HEIGHT / 2), 
+                        enemy.FRAME_WIDTH, 
+                        enemy.FRAME_HEIGHT
+                    ), 
+                    Color.Pink);
+                
                 spriteBatch.Draw(
                     texture: GetTexture2D(enemy.enemyType),
                     position: enemy.position,
@@ -174,6 +183,7 @@ namespace GameProject.Code
                     scale: 1f,
                     effects: SpriteEffects.FlipHorizontally,
                     layerDepth: 1f);
+
             });
         }
     }

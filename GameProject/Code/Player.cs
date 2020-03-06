@@ -26,7 +26,7 @@ namespace GameProject.Code
 
         private readonly Game1 game;
         private Texture2D playerSpriteSheet;
-        private playerState playerState;
+        public playerState playerState;
         private TimeSpan timer;
         private int frame;
         private SpriteEffects effect;
@@ -57,10 +57,10 @@ namespace GameProject.Code
         /// </summary>
         public float scale = 1f;
 
-        private const int BOTTOM_COLLISION_OFFSET = 52;
-        private const int TOP_COLLISION_OFFSET2 = 3;
+        private const int BOTTOM_COLLISION_OFFSET = 35;
+        private const int TOP_COLLISION_OFFSET = 20;
         private const int RIGHT_COLLISION_OFFSET = 55;
-        private const int LEFT_COLLISION_OFFSET2 = 7;
+        private const int LEFT_COLLISION_OFFSET = 7;
 
         public Player(Game1 game)
         {
@@ -95,51 +95,51 @@ namespace GameProject.Code
             // State pattern
             if (!game.gameFinished)
             {
+                position.X = -game.worldOffset.X + 100;
+                playerState = playerState.swimming;
                 if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
-                    && position.Y < game.GraphicsDevice.Viewport.Height - (FRAME_HEIGHT / 4) + TOP_COLLISION_OFFSET2)
+                    && position.Y < game.GraphicsDevice.Viewport.Height - (FRAME_HEIGHT / 4) + TOP_COLLISION_OFFSET)
                 {
-                    playerState = playerState.idle;
                     position.Y += delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
 
                 if ((keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W))
-                    && position.Y - (FRAME_HEIGHT / 4) - TOP_COLLISION_OFFSET2 > 0)
+                    && position.Y - (FRAME_HEIGHT / 4) - TOP_COLLISION_OFFSET > 0)
                 {
-                    playerState = playerState.idle;
                     position.Y -= delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
-#if DEBUG
-                if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
-                {
-                    playerState = playerState.swimming;
-                    position.X -= delta * PLAYER_SPEED;
-                    effect = SpriteEffects.FlipHorizontally;
-                }
-#endif
 
-                if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
-                {
-                    playerState = playerState.swimming;
-                    position.X += delta * PLAYER_SPEED;
-                    effect = SpriteEffects.None;
-                }
+                // Player right and left
+                //if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
+                //{
+                //    playerState = playerState.swimming;
+                //    position.X -= delta * PLAYER_SPEED;
+                //    effect = SpriteEffects.FlipHorizontally;
+                //}
 
-                if (!(keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)
-                    || keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)
-                    || keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W)
-                    || keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S)))
-                {
-                    playerState = playerState.idle;
-                    effect = SpriteEffects.None;
-                }
+                //if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
+                //{
+                //    playerState = playerState.swimming;
+                //    position.X += delta * PLAYER_SPEED;
+                //    effect = SpriteEffects.None;
+                //}
+
+                //if (!(keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)
+                //    || keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)
+                //    || keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W)
+                //    || keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S)))
+                //{
+                //    playerState = playerState.idle;
+                //    effect = SpriteEffects.None;
+                //}
 
                 if (Collision())
                 {
-                    playerState = playerState.hurt;
+                    // playerState = playerState.hurt;
                     effect = SpriteEffects.None;
-                    game.gameFinished = true;
+                    // game.gameFinished = true;
                     playerDeathSound.Play();
                 }
             }
@@ -147,7 +147,7 @@ namespace GameProject.Code
             {
                 if (scale > 0f)
                 {
-                    scale -= 0.005f;
+                    // scale -= 0.005f;
                 }
             }
 
@@ -182,9 +182,9 @@ namespace GameProject.Code
                 .Exists(enemy =>
                     {
                         return (enemy.position.X < position.X + FRAME_WIDTH - RIGHT_COLLISION_OFFSET                          // player right side
-                                && enemy.position.X + enemy.FRAME_WIDTH > position.X + LEFT_COLLISION_OFFSET2                 // player left side
-                                && enemy.position.Y < position.Y + FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET                     // player bottom
-                                && enemy.position.Y + enemy.FRAME_HEIGHT > position.Y - TOP_COLLISION_OFFSET2);               // player top
+                                && enemy.position.X + enemy.FRAME_WIDTH > position.X + LEFT_COLLISION_OFFSET                 // player left side
+                                && enemy.position.Y < position.Y + FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET                   // player bottom
+                                && enemy.position.Y + enemy.FRAME_HEIGHT > position.Y + TOP_COLLISION_OFFSET);               // player top
                     });
         }
 
@@ -197,6 +197,16 @@ namespace GameProject.Code
                 FRAME_HEIGHT
             );
 
+            VisualDebugging.DrawRectangle(
+                spriteBatch, 
+                new Rectangle(
+                    (int)position.X - (FRAME_WIDTH / 2), 
+                    (int)position.Y - (FRAME_HEIGHT / 2) + TOP_COLLISION_OFFSET, 
+                    FRAME_WIDTH, 
+                    FRAME_HEIGHT
+                ),
+                Color.Black);
+
             spriteBatch.Draw(
                 texture: playerSpriteSheet, 
                 position: position, 
@@ -207,6 +217,7 @@ namespace GameProject.Code
                 scale: scale,
                 effects: effect, 
                 layerDepth: 0f);
+
         }
     }
 }

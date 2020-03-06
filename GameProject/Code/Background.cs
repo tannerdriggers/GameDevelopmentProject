@@ -10,7 +10,7 @@ namespace GameProject.Code
 {
     class Background
     {
-        private List<BackgroundModel> backgrounds;
+        private Queue<BackgroundModel> backgrounds;
         private Game1 game;
         public Texture2D backgroundImage;
         public Texture2D midgroundImage;
@@ -20,7 +20,7 @@ namespace GameProject.Code
         public Background(Game1 game)
         {
             this.game = game;
-            backgrounds = new List<BackgroundModel>();
+            backgrounds = new Queue<BackgroundModel>();
         }
 
         public void LoadContent()
@@ -28,7 +28,7 @@ namespace GameProject.Code
             backgroundImage = game.Content.Load<Texture2D>("background");
             midgroundImage = game.Content.Load<Texture2D>("midground");
 
-            backgrounds.Add(
+            backgrounds.Enqueue(
                 new BackgroundModel(
                     new BoundingRectangle(
                         -1 * game.GraphicsDevice.Viewport.Width - 50,
@@ -38,15 +38,15 @@ namespace GameProject.Code
                     )
                 )
             );
-            backgrounds.Add(new BackgroundModel(new BoundingRectangle(-50, 0, game.GraphicsDevice.Viewport.Width, game.GraphicsDevice.Viewport.Height)));
+            backgrounds.Enqueue(new BackgroundModel(new BoundingRectangle(-50, 0, game.GraphicsDevice.Viewport.Width, game.GraphicsDevice.Viewport.Height)));
         }
 
         public void Update(GameTime gameTime)
         {
-            if (game.player.position.X - ( totalBackgrounds * game.GraphicsDevice.Viewport.Width) >= 50)
+            if (game.worldOffset.X - ( totalBackgrounds * game.GraphicsDevice.Viewport.Width) >= -50)
             {
                 totalBackgrounds++;
-                backgrounds.Add(
+                backgrounds.Enqueue(
                     new BackgroundModel(
                         new BoundingRectangle(
                             totalBackgrounds * game.GraphicsDevice.Viewport.Width - 50,
@@ -57,23 +57,22 @@ namespace GameProject.Code
                     )
                 );
 
-                backgrounds.RemoveAt(0);
+                backgrounds.Dequeue();
             }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            //new Rectangle(
-            //            (int)game.player.position.X - 100,
-            //            0,
-            //            game.GraphicsDevice.Viewport.Width + 1,
-            //            game.GraphicsDevice.Viewport.Height
-            //        )
             spriteBatch.Draw(
                 texture: backgroundImage,
-                position: new Vector2(game.player.position.X - 100f, 0),
+                position: game.worldOffset * -1,
+                sourceRectangle: null,
                 color: Color.White,
-                scale: new Vector2(game.GraphicsDevice.Viewport.Width / 250, game.GraphicsDevice.Viewport.Height / 200)
+                rotation: 0f,
+                origin: new Vector2(0, 0),
+                scale: new Vector2(game.GraphicsDevice.Viewport.Width / 250, game.GraphicsDevice.Viewport.Height / 200),
+                effects: SpriteEffects.None,
+                layerDepth: 0
             );
 
             foreach (var background in backgrounds)
