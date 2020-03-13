@@ -84,7 +84,7 @@ namespace GameProject
             scoreFont = Content.Load<SpriteFont>("score");
             backgroundFlyweight.LoadContent();
 
-            enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(50, 200)));
+            enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(80, 200)));
             player.playerState = playerState.swimming;
         }
 

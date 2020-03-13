@@ -10,6 +10,8 @@
 
 #-------------------------------- References --------------------------------#
 
+/reference:..\..\GameLibrary\bin\Debug\netstandard2.0\GameLibrary.dll
+/reference:..\..\GameContentExtension\bin\Debug\netstandard2.0\GameContentExtension.dll
 
 #---------------------------------- Content ---------------------------------#
 
@@ -85,6 +87,11 @@
 /processorParam:Quality=Best
 /build:Laser_Gun-Mike_Koenig-1975537935.wav;death.wav
 
+#begin level-test.tmx
+/importer:TilemapImporter
+/processor:TilemapProcessor
+/build:level-test.tmx
+
 #begin midground.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -127,6 +134,23 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:score.spritefont
+
+#begin spritesheet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:spritesheet.png
+
+#begin tiledspritesheet.tsx
+/importer:TileSetImporter
+/processor:TileSetProcessor
+/build:tiledspritesheet.tsx
 
 #begin watery_cave_loop.ogg
 /importer:OggImporter

@@ -22,7 +22,8 @@ namespace GameProject.Code
 
     class Player
     {
-        public Vector2 position;
+        public Vector2 playerPosition;
+        public BoundingRectangle playerHitbox;
 
         private readonly Game1 game;
         private Texture2D playerSpriteSheet;
@@ -67,7 +68,8 @@ namespace GameProject.Code
             this.game = game;
             playerState = playerState.swimming;
             timer = new TimeSpan(0);
-            position = new Vector2(50, (game.GraphicsDevice.Viewport.Height / 2));
+            playerPosition = new Vector2(50, (game.GraphicsDevice.Viewport.Height / 2));
+            playerHitbox = new BoundingRectangle(playerPosition.X, playerPosition.Y, FRAME_WIDTH, FRAME_HEIGHT);
             frame = 0;
             effect = SpriteEffects.None;
         }
@@ -92,39 +94,48 @@ namespace GameProject.Code
             KeyboardState keyboard = Keyboard.GetState();
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            playerHitbox = new BoundingRectangle(
+                playerPosition.X + TOP_COLLISION_OFFSET,
+                playerPosition.Y + RIGHT_COLLISION_OFFSET,
+                FRAME_WIDTH - RIGHT_COLLISION_OFFSET,
+                FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET);
+
             // State pattern
             if (!game.gameFinished)
             {
-                position.X = -game.worldOffset.X + 100;
+                playerPosition.X = -game.worldOffset.X + 100;
                 playerState = playerState.swimming;
+
+                // TODO
                 if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
-                    && position.Y < game.GraphicsDevice.Viewport.Height - (FRAME_HEIGHT / 4) + TOP_COLLISION_OFFSET)
+                    && playerPosition.Y < game.GraphicsDevice.Viewport.Height - (FRAME_HEIGHT / 4) + TOP_COLLISION_OFFSET)
                 {
-                    position.Y += delta * PLAYER_SPEED;
+                    playerPosition.Y += delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
 
+                // TODO
                 if ((keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W))
-                    && position.Y - (FRAME_HEIGHT / 4) - TOP_COLLISION_OFFSET > 0)
+                    && playerPosition.Y - (FRAME_HEIGHT / 4) - TOP_COLLISION_OFFSET > 0)
                 {
-                    position.Y -= delta * PLAYER_SPEED;
+                    playerPosition.Y -= delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
 
                 // Player right and left
-                //if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
-                //{
-                //    playerState = playerState.swimming;
-                //    position.X -= delta * PLAYER_SPEED;
-                //    effect = SpriteEffects.FlipHorizontally;
-                //}
+#if DEBUG
+                if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
+                {
+                    playerPosition.X -= delta * PLAYER_SPEED;
+                    effect = SpriteEffects.FlipHorizontally;
+                }
 
-                //if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
-                //{
-                //    playerState = playerState.swimming;
-                //    position.X += delta * PLAYER_SPEED;
-                //    effect = SpriteEffects.None;
-                //}
+                if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
+                {
+                    playerPosition.X += delta * PLAYER_SPEED;
+                    effect = SpriteEffects.None;
+                }
+#endif
 
                 //if (!(keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)
                 //    || keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)
@@ -177,14 +188,14 @@ namespace GameProject.Code
                 .enemyFlyweight
                 .enemies
                 .AsQueryable()
-                .Where(enemy => enemy.position.Y < position.Y + FRAME_HEIGHT + 20 && enemy.position.Y + enemy.FRAME_HEIGHT + 20 > position.Y)
+                .Where(enemy => enemy.position.Y < playerPosition.Y + FRAME_HEIGHT + 20 && enemy.position.Y + enemy.FRAME_HEIGHT + 20 > playerPosition.Y)
                 .ToList()
                 .Exists(enemy =>
                     {
-                        return (enemy.position.X < position.X + FRAME_WIDTH - RIGHT_COLLISION_OFFSET                          // player right side
-                                && enemy.position.X + enemy.FRAME_WIDTH > position.X + LEFT_COLLISION_OFFSET                 // player left side
-                                && enemy.position.Y < position.Y + FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET                   // player bottom
-                                && enemy.position.Y + enemy.FRAME_HEIGHT > position.Y + TOP_COLLISION_OFFSET);               // player top
+                        return (enemy.position.X <= playerHitbox.Width                                     // player right side
+                                && enemy.position.X + enemy.FRAME_WIDTH >= playerHitbox.X                  // player left side
+                                && enemy.position.Y <= playerHitbox.Height                                 // player bottom
+                                && enemy.position.Y + enemy.FRAME_HEIGHT >= playerHitbox.Y);               // player top
                     });
         }
 
@@ -199,17 +210,12 @@ namespace GameProject.Code
 
             VisualDebugging.DrawRectangle(
                 spriteBatch, 
-                new Rectangle(
-                    (int)position.X - (FRAME_WIDTH / 2), 
-                    (int)position.Y - (FRAME_HEIGHT / 2) + TOP_COLLISION_OFFSET, 
-                    FRAME_WIDTH, 
-                    FRAME_HEIGHT
-                ),
+                playerHitbox,
                 Color.Black);
 
             spriteBatch.Draw(
                 texture: playerSpriteSheet, 
-                position: position, 
+                position: playerPosition, 
                 sourceRectangle: source, 
                 color: Color.White, 
                 rotation: 0f, 

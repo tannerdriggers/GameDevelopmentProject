@@ -13,7 +13,7 @@ namespace GameProject.Code
     /// <summary>
     /// A static class containing a library of visual debugging methods
     /// </summary>
-    public static class VisualDebugging
+    static class VisualDebugging
     {
         /// <summary>
         /// A texture consisting of a single white pixel
@@ -38,6 +38,11 @@ namespace GameProject.Code
         public static void DrawRectangle(SpriteBatch spriteBatch, Rectangle rectangle, Color color)
         {
             spriteBatch.Draw(pixel, rectangle, color);
+        }
+
+        public static void DrawRectangle(SpriteBatch spriteBatch, BoundingRectangle rectangle, Color color)
+        {
+            spriteBatch.Draw(pixel, new Rectangle((int)rectangle.X, (int)rectangle.Y, (int)rectangle.Width, (int)rectangle.Height), color);
         }
     }
 }
