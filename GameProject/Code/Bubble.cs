@@ -17,7 +17,7 @@ namespace GameProject.Code
     /// </summary>
     class Bubble
     {
-        Game1 game;
+        Game game;
 
         public Texture2D bubblesTexture;
         public SoundEffect bubblesSound;
@@ -41,7 +41,7 @@ namespace GameProject.Code
 
         public List<BubbleModel> bubbles;
 
-        public Bubble(Game1 game)
+        public Bubble(Game game)
         {
             this.game = game;
             bubbles = new List<BubbleModel>();
@@ -49,8 +49,8 @@ namespace GameProject.Code
 
         public void LoadContent(ContentManager Content)
         {
-            bubblesTexture = Content.Load<Texture2D>("bubbles");
-            bubblesSound = Content.Load<SoundEffect>("Large Bubble");
+            bubblesTexture = Content.Load<Texture2D>("entities/bubbles");
+            bubblesSound = Content.Load<SoundEffect>("entities/Large Bubble");
         }
 
         public void UnloadContent()

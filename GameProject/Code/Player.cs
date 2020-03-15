@@ -25,7 +25,7 @@ namespace GameProject.Code
         public Vector2 playerPosition;
         public BoundingRectangle playerHitbox;
 
-        private readonly Game1 game;
+        private readonly Game game;
         private Texture2D playerSpriteSheet;
         public playerState playerState;
         private TimeSpan timer;
@@ -58,12 +58,12 @@ namespace GameProject.Code
         /// </summary>
         public float scale = 1f;
 
-        private const int BOTTOM_COLLISION_OFFSET = 35;
-        private const int TOP_COLLISION_OFFSET = 20;
-        private const int RIGHT_COLLISION_OFFSET = 55;
-        private const int LEFT_COLLISION_OFFSET = 7;
+        private const int TOP_COLLISION_OFFSET = 29;
+        private const int BOTTOM_COLLISION_OFFSET = 32;
+        private const int RIGHT_COLLISION_OFFSET = 15;
+        private const int LEFT_COLLISION_OFFSET = 15;
 
-        public Player(Game1 game)
+        public Player(Game game)
         {
             this.game = game;
             playerState = playerState.swimming;
@@ -76,8 +76,8 @@ namespace GameProject.Code
 
         public void LoadContent(ContentManager Content)
         {
-            playerSpriteSheet = Content.Load<Texture2D>("player");
-            playerDeathSound = Content.Load<SoundEffect>("death");
+            playerSpriteSheet = Content.Load<Texture2D>("entities/player");
+            playerDeathSound = Content.Load<SoundEffect>("entities/death");
         }
 
         public void UnloadContent()
@@ -95,10 +95,10 @@ namespace GameProject.Code
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             playerHitbox = new BoundingRectangle(
-                playerPosition.X + TOP_COLLISION_OFFSET,
-                playerPosition.Y + RIGHT_COLLISION_OFFSET,
-                FRAME_WIDTH - RIGHT_COLLISION_OFFSET,
-                FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET);
+                playerPosition.X + LEFT_COLLISION_OFFSET,
+                playerPosition.Y + TOP_COLLISION_OFFSET,
+                FRAME_WIDTH - RIGHT_COLLISION_OFFSET - LEFT_COLLISION_OFFSET,
+                FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET - TOP_COLLISION_OFFSET);
 
             // State pattern
             if (!game.gameFinished)
@@ -106,36 +106,35 @@ namespace GameProject.Code
                 playerPosition.X = -game.worldOffset.X + 100;
                 playerState = playerState.swimming;
 
-                // TODO
                 if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
-                    && playerPosition.Y < game.GraphicsDevice.Viewport.Height - (FRAME_HEIGHT / 4) + TOP_COLLISION_OFFSET)
+                    && playerHitbox.Y + playerHitbox.Height < game.GraphicsDevice.Viewport.Height)
                 {
                     playerPosition.Y += delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
 
-                // TODO
                 if ((keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W))
-                    && playerPosition.Y - (FRAME_HEIGHT / 4) - TOP_COLLISION_OFFSET > 0)
+                    && playerHitbox.Y > 0)
                 {
                     playerPosition.Y -= delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
 
-                // Player right and left
 #if DEBUG
+                // Player left
                 if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
                 {
-                    playerPosition.X -= delta * PLAYER_SPEED;
+                    game.worldOffset.X += delta * PLAYER_SPEED;
                     effect = SpriteEffects.FlipHorizontally;
                 }
+#endif
 
+                // Player right
                 if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
                 {
-                    playerPosition.X += delta * PLAYER_SPEED;
+                    game.worldOffset.X -= delta * PLAYER_SPEED;
                     effect = SpriteEffects.None;
                 }
-#endif
 
                 //if (!(keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)
                 //    || keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)
@@ -148,9 +147,9 @@ namespace GameProject.Code
 
                 if (Collision())
                 {
-                    // playerState = playerState.hurt;
+                    playerState = playerState.hurt;
                     effect = SpriteEffects.None;
-                    // game.gameFinished = true;
+                    game.gameFinished = true;
                     playerDeathSound.Play();
                 }
             }
@@ -158,7 +157,7 @@ namespace GameProject.Code
             {
                 if (scale > 0f)
                 {
-                    // scale -= 0.005f;
+                    scale -= 0.005f;
                 }
             }
 
@@ -192,10 +191,10 @@ namespace GameProject.Code
                 .ToList()
                 .Exists(enemy =>
                     {
-                        return (enemy.position.X <= playerHitbox.Width                                     // player right side
-                                && enemy.position.X + enemy.FRAME_WIDTH >= playerHitbox.X                  // player left side
-                                && enemy.position.Y <= playerHitbox.Height                                 // player bottom
-                                && enemy.position.Y + enemy.FRAME_HEIGHT >= playerHitbox.Y);               // player top
+                        return (enemy.hitBox.X <= playerHitbox.X + playerHitbox.Width                                     // player right side
+                                && enemy.hitBox.X + enemy.hitBox.Width >= playerHitbox.X                  // player left side
+                                && enemy.hitBox.Y <= playerHitbox.Y + playerHitbox.Height                                 // player bottom
+                                && enemy.hitBox.Y + enemy.hitBox.Height >= playerHitbox.Y);               // player top
                     });
         }
 
@@ -208,10 +207,12 @@ namespace GameProject.Code
                 FRAME_HEIGHT
             );
 
+#if DEBUG
             VisualDebugging.DrawRectangle(
                 spriteBatch, 
                 playerHitbox,
                 Color.Black);
+#endif
 
             spriteBatch.Draw(
                 texture: playerSpriteSheet, 
@@ -219,7 +220,7 @@ namespace GameProject.Code
                 sourceRectangle: source, 
                 color: Color.White, 
                 rotation: 0f, 
-                origin: new Vector2(FRAME_WIDTH / 2, FRAME_HEIGHT / 2), 
+                origin: Vector2.Zero,
                 scale: scale,
                 effects: effect, 
                 layerDepth: 0f);

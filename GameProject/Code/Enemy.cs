@@ -27,9 +27,9 @@ namespace GameProject.Code
 
         public List<EnemyModel> enemies;
 
-        public Game1 game;
+        public Game game;
 
-        public Enemy(Game1 game)
+        public Enemy(Game game)
         {
             this.game = game;
             enemies = new List<EnemyModel>();
@@ -48,9 +48,9 @@ namespace GameProject.Code
 
         public void LoadContent(ContentManager Content)
         {
-            fish = Content.Load<Texture2D>("fish");
-            fish_big = Content.Load<Texture2D>("fish-big");
-            fish_dart = Content.Load<Texture2D>("fish-dart");
+            fish = Content.Load<Texture2D>("entities/fish");
+            fish_big = Content.Load<Texture2D>("entities/fish-big");
+            fish_dart = Content.Load<Texture2D>("entities/fish-dart");
         }
 
         public void UnloadContent()
@@ -75,22 +75,38 @@ namespace GameProject.Code
                     enemyModel.FRAME_WIDTH = 32;
                     enemyModel.FRAME_HEIGHT = 32;
                     enemyModel.ENEMY_SPEED += random.Next(-1, 1) / 2f;
+                    enemyModel.TOP_COLLISION_OFFSET = 11;
+                    enemyModel.BOTTOM_COLLISION_OFFSET = 6;
+                    enemyModel.LEFT_COLLISION_OFFSET = 4;
+                    enemyModel.RIGHT_COLLISION_OFFSET = 2;
                     break;
                 case EnemyType.fish_big:
                     enemyModel.FRAME_WIDTH = 54;
                     enemyModel.FRAME_HEIGHT = 49;
                     enemyModel.ENEMY_SPEED -= 1 + random.Next(-1, 1) / 2f;
+                    enemyModel.TOP_COLLISION_OFFSET = 11;
+                    enemyModel.BOTTOM_COLLISION_OFFSET = 6;
+                    enemyModel.LEFT_COLLISION_OFFSET = 5;
+                    enemyModel.RIGHT_COLLISION_OFFSET = 5;
                     break;
                 case EnemyType.fish_dart:
                     enemyModel.FRAME_WIDTH = 39;
                     enemyModel.FRAME_HEIGHT = 20;
                     enemyModel.ENEMY_SPEED += 1 + random.Next(-1, 1) / 2f;
+                    enemyModel.TOP_COLLISION_OFFSET = 4;
+                    enemyModel.BOTTOM_COLLISION_OFFSET = 4;
+                    enemyModel.LEFT_COLLISION_OFFSET = 3;
+                    enemyModel.RIGHT_COLLISION_OFFSET = 2;
                     break;
                 default:
                     enemyModel.enemyType = EnemyType.fish;
                     enemyModel.FRAME_WIDTH = 32;
                     enemyModel.FRAME_HEIGHT = 32;
                     enemyModel.ENEMY_SPEED += random.Next(-1, 1) / 2f;
+                    enemyModel.TOP_COLLISION_OFFSET = 10;
+                    enemyModel.BOTTOM_COLLISION_OFFSET = 10;
+                    enemyModel.LEFT_COLLISION_OFFSET = 10;
+                    enemyModel.RIGHT_COLLISION_OFFSET = 10;
                     break;
             }
         }
@@ -120,6 +136,13 @@ namespace GameProject.Code
             for (int i = 0; i < enemies.Count; i++)
             {
                 var enemy = enemies[i];
+
+                enemy.hitBox = new BoundingRectangle(
+                    enemy.position.X + enemy.LEFT_COLLISION_OFFSET,
+                    enemy.position.Y + enemy.TOP_COLLISION_OFFSET,
+                    enemy.FRAME_WIDTH - enemy.RIGHT_COLLISION_OFFSET - enemy.LEFT_COLLISION_OFFSET,
+                    enemy.FRAME_HEIGHT - enemy.BOTTOM_COLLISION_OFFSET - enemy.TOP_COLLISION_OFFSET);
+
                 if (enemy.position.X > -game.worldOffset.X - (enemy.FRAME_WIDTH + 5))
                 {
                     var randomBubbles = random.Next(1000);
@@ -128,8 +151,8 @@ namespace GameProject.Code
                         game.bubbleFlyweight.bubbles.Add(new BubbleModel(game, enemy.position));
                     }
 
-                    if (!enemy.debug)
-                        enemy.position.X -= enemy.ENEMY_SPEED;
+                    //if (!enemy.debug)
+                    //    enemy.position.X -= enemy.ENEMY_SPEED;
 
                     enemy.timer += gameTime.ElapsedGameTime;
 
@@ -163,23 +186,20 @@ namespace GameProject.Code
                     enemy.FRAME_HEIGHT
                 );
 
+#if DEBUG
                 VisualDebugging.DrawRectangle(
-                    spriteBatch, 
-                    new Rectangle(
-                        (int)enemy.position.X - (enemy.FRAME_WIDTH / 2), 
-                        (int)enemy.position.Y - (enemy.FRAME_HEIGHT / 2), 
-                        enemy.FRAME_WIDTH, 
-                        enemy.FRAME_HEIGHT
-                    ), 
+                    spriteBatch,
+                    enemy.hitBox,
                     Color.Pink);
-                
+#endif
+
                 spriteBatch.Draw(
                     texture: GetTexture2D(enemy.enemyType),
                     position: enemy.position,
                     sourceRectangle: source,
                     color: Color.White,
                     rotation: 0f,
-                    origin: new Vector2(enemy.FRAME_WIDTH / 2, enemy.FRAME_HEIGHT / 2),
+                    origin: Vector2.Zero,
                     scale: 1f,
                     effects: SpriteEffects.FlipHorizontally,
                     layerDepth: 1f);

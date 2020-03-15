@@ -23,7 +23,7 @@ namespace GameProject.Code
         public Vector2 position;
         public Vector2 scale = new Vector2(1, 1);
 
-        public BubbleModel(Game1 game, Vector2 position)
+        public BubbleModel(Game game, Vector2 position)
         {
             bubbleFlyweight = game.bubbleFlyweight;
             timer = new TimeSpan(0);

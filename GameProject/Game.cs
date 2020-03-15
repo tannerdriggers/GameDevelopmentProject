@@ -7,13 +7,16 @@ using System.Collections.Generic;
 using System;
 
 using GameProject.Code;
+using GameLibrary;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace GameProject
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    class Game1 : Game
+    class Game : Microsoft.Xna.Framework.Game
     {
         public bool gameFinished;
         public int score;
@@ -21,6 +24,7 @@ namespace GameProject
         public Enemy enemyFlyweight;
         public Bubble bubbleFlyweight;
         public Background backgroundFlyweight;
+        public List<GameMapContent> levels;
         public Player player;
 
         private SpriteBatch spriteBatch;
@@ -32,7 +36,7 @@ namespace GameProject
         private string helpText = "Score points by avoiding the fish.\nPress Enter to Start.";
         private bool gameStarted = false;
 
-        public Game1()
+        public Game()
         {
             new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -47,6 +51,8 @@ namespace GameProject
         protected override void Initialize()
         {
             gameFinished = false;
+
+            levels = new List<GameMapContent>();
 
             worldOffset = new Vector2(50, 0);
 
@@ -78,13 +84,16 @@ namespace GameProject
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
             watery_cave_loop = Content.Load<Song>("watery_cave_loop");
+            scoreFont = Content.Load<SpriteFont>("score");
+            var json = Content.Load<string>("level0");
+            levels.Add(JsonConvert.DeserializeObject<GameMapContent>(json));
+
+            player.LoadContent(Content);
             bubbleFlyweight.LoadContent(Content);
             enemyFlyweight.LoadContent(Content);
-            player.LoadContent(Content);
-            scoreFont = Content.Load<SpriteFont>("score");
             backgroundFlyweight.LoadContent();
 
-            enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(80, 200)));
+            //enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(80, 200), EnemyType.fish_dart));
             player.playerState = playerState.swimming;
         }
 

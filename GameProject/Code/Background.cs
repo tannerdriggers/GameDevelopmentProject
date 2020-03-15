@@ -11,13 +11,11 @@ namespace GameProject.Code
     class Background
     {
         private Queue<BackgroundModel> backgrounds;
-        private Game1 game;
+        private Game game;
         public Texture2D backgroundImage;
         public Texture2D midgroundImage;
 
-        private long totalBackgrounds = 0;
-
-        public Background(Game1 game)
+        public Background(Game game)
         {
             this.game = game;
             backgrounds = new Queue<BackgroundModel>();
@@ -27,37 +25,23 @@ namespace GameProject.Code
         {
             backgroundImage = game.Content.Load<Texture2D>("background");
             midgroundImage = game.Content.Load<Texture2D>("midground");
-
-            backgrounds.Enqueue(
-                new BackgroundModel(
-                    new BoundingRectangle(
-                        -1 * game.GraphicsDevice.Viewport.Width - 50,
-                        0,
-                        game.GraphicsDevice.Viewport.Width,
-                        game.GraphicsDevice.Viewport.Height
-                    )
-                )
-            );
             backgrounds.Enqueue(new BackgroundModel(new BoundingRectangle(-50, 0, game.GraphicsDevice.Viewport.Width, game.GraphicsDevice.Viewport.Height)));
         }
 
         public void Update(GameTime gameTime)
         {
-            if (game.worldOffset.X - ( totalBackgrounds * game.GraphicsDevice.Viewport.Width) >= -50)
+            if (game.player.playerPosition.X + ((backgrounds.Count - 1) * game.GraphicsDevice.Viewport.Width) > 50)
             {
-                totalBackgrounds++;
                 backgrounds.Enqueue(
                     new BackgroundModel(
                         new BoundingRectangle(
-                            totalBackgrounds * game.GraphicsDevice.Viewport.Width - 50,
+                            (backgrounds.Count - 1) * game.GraphicsDevice.Viewport.Width - 50,
                             0,
                             game.GraphicsDevice.Viewport.Width,
                             game.GraphicsDevice.Viewport.Height
                         )
                     )
                 );
-
-                backgrounds.Dequeue();
             }
         }
 

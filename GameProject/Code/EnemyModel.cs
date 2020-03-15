@@ -25,20 +25,24 @@ namespace GameProject.Code
     /// </summary>
     class EnemyModel
     {
-        public bool debug = false;
-
         public TimeSpan timer;
         public int frame;
         public int FRAME_WIDTH;
         public int FRAME_HEIGHT;
         public float ENEMY_SPEED;
 
+        public int TOP_COLLISION_OFFSET = 0;
+        public int BOTTOM_COLLISION_OFFSET = 0;
+        public int RIGHT_COLLISION_OFFSET = 0;
+        public int LEFT_COLLISION_OFFSET = 0;
+
         public bool alive;
         public Vector2 position;
+        public BoundingRectangle hitBox;
         public EnemyType enemyType;
         private readonly Enemy enemyFlyweight;
 
-        public EnemyModel(Game1 game)
+        public EnemyModel(Game game)
         {
             enemyFlyweight = game.enemyFlyweight;
             alive = true;
@@ -55,10 +59,8 @@ namespace GameProject.Code
             frame = 0;
         }
 
-        public EnemyModel(Game1 game, Vector2 position)
+        public EnemyModel(Game game, Vector2 position)
         {
-            debug = true;
-
             enemyFlyweight = game.enemyFlyweight;
             alive = true;
             ENEMY_SPEED = 0;
@@ -70,6 +72,27 @@ namespace GameProject.Code
 
             timer = new TimeSpan(0);
             this.position = position;
+
+            frame = 0;
+        }
+
+        public EnemyModel(Game game, Vector2 position, EnemyType enemyType)
+        {
+            enemyFlyweight = game.enemyFlyweight;
+            alive = true;
+            ENEMY_SPEED = 0;
+
+            this.enemyType = enemyType;
+
+            enemyFlyweight.SetWidthHeightSpeed(this);
+
+            timer = new TimeSpan(0);
+            this.position = position;
+            hitBox = new BoundingRectangle(
+                position.X + LEFT_COLLISION_OFFSET,
+                position.Y + TOP_COLLISION_OFFSET,
+                FRAME_WIDTH - RIGHT_COLLISION_OFFSET - LEFT_COLLISION_OFFSET,
+                FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET - TOP_COLLISION_OFFSET);
 
             frame = 0;
         }

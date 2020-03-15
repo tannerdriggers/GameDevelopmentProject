@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GameContentLevelsExtension": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

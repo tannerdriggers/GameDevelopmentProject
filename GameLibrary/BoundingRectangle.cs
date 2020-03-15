@@ -42,10 +42,10 @@ namespace GameLibrary
         /// <param name="height">The height of the rectangle</param>
         public BoundingRectangle(float x, float y, float width, float height)
         {
-            this.X = x;
-            this.Y = y;
-            this.Width = width;
-            this.Height = height;
+            X = x;
+            Y = y;
+            Width = width;
+            Height = height;
         }
 
         /// <summary>
