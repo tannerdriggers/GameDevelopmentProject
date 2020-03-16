@@ -151,8 +151,7 @@ namespace GameProject.Code
                         game.bubbleFlyweight.bubbles.Add(new BubbleModel(game, enemy.position));
                     }
 
-                    //if (!enemy.debug)
-                    //    enemy.position.X -= enemy.ENEMY_SPEED;
+                    enemy.position.X -= enemy.ENEMY_SPEED;
 
                     enemy.timer += gameTime.ElapsedGameTime;
 
