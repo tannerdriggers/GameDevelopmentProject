@@ -85,6 +85,8 @@ namespace GameProject
             spriteBatch = new SpriteBatch(GraphicsDevice);
             watery_cave_loop = Content.Load<Song>("watery_cave_loop");
             scoreFont = Content.Load<SpriteFont>("score");
+
+            // Unsupported file load
             var json = Content.Load<string>("level0");
             levels.Add(JsonConvert.DeserializeObject<GameMapContent>(json));
 
@@ -93,7 +95,6 @@ namespace GameProject
             enemyFlyweight.LoadContent(Content);
             backgroundFlyweight.LoadContent();
 
-            //enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(80, 200), EnemyType.fish_dart));
             player.playerState = playerState.swimming;
         }
 
