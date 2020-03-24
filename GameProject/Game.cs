@@ -10,6 +10,7 @@ using GameProject.Code;
 using GameLibrary;
 using Newtonsoft.Json;
 using System.IO;
+using GameProject.Code.Entities;
 
 namespace GameProject
 {
@@ -96,6 +97,8 @@ namespace GameProject
             backgroundFlyweight.LoadContent();
 
             player.playerState = playerState.swimming;
+
+            enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(50, 200)));
         }
 
         /// <summary>
@@ -162,8 +165,6 @@ namespace GameProject
 
                 enemyFlyweight.Update(gameTime);
 
-                bubbleFlyweight.Update(gameTime);
-
                 scorePosition = new Vector2(GraphicsDevice.Viewport.Width - scoreFont.MeasureString(helpText + score.ToString()).X - 20, 10);
             }
             else
@@ -191,7 +192,7 @@ namespace GameProject
 
             backgroundFlyweight.Draw(spriteBatch);
             enemyFlyweight.Draw(spriteBatch);
-            bubbleFlyweight.Draw(spriteBatch);
+            // bubbleFlyweight.Draw(spriteBatch);
             player.Draw(spriteBatch);
             spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), new Vector2(scorePosition.X - 2, scorePosition.Y) - worldOffset, Color.Black);
             spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), scorePosition - worldOffset, Color.White);

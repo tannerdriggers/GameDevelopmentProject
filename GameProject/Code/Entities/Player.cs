@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Audio;
 
-namespace GameProject.Code
+namespace GameProject.Code.Entities
 {
     /// <summary>
     /// The different states the player can be in

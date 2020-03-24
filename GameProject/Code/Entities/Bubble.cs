@@ -10,7 +10,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
 
-namespace GameProject.Code
+using GameProject.Code.Particles;
+
+namespace GameProject.Code.Entities
 {
     /// <summary>
     /// Bubble Flyweight
@@ -18,6 +20,8 @@ namespace GameProject.Code
     class Bubble
     {
         Game game;
+
+        Random random = new Random();
 
         public Texture2D bubblesTexture;
         public SoundEffect bubblesSound;
@@ -41,6 +45,8 @@ namespace GameProject.Code
 
         public List<BubbleModel> bubbles;
 
+        ParticleGenerator pg;
+
         public Bubble(Game game)
         {
             this.game = game;
@@ -51,6 +57,31 @@ namespace GameProject.Code
         {
             bubblesTexture = Content.Load<Texture2D>("entities/bubbles");
             bubblesSound = Content.Load<SoundEffect>("entities/Large Bubble");
+
+            // testing
+            pg = new ParticleGenerator(game.GraphicsDevice, 1000, bubblesTexture);
+            pg.SpawnParticle = (ref Particle particle) =>
+            {
+                var enemies = game.enemyFlyweight.enemies;
+                foreach (var enemy in enemies)
+                {
+                    particle.Position = enemy.position;
+                    particle.Velocity = new Vector2(
+                        MathHelper.Lerp(-50, 50, (float)random.NextDouble()),
+                        MathHelper.Lerp(0, 100, (float)random.NextDouble())
+                        );
+                }
+            };
+
+            pg.UpdateParticle = (float deltaT, ref Particle particle) =>
+            {
+                particle.Velocity += deltaT * particle.Acceleration;
+                particle.Position += deltaT * particle.Velocity;
+                particle.Scale -= deltaT;
+                particle.Life -= deltaT;
+            };
+            pg.Emitter = new Vector2(100, 100);
+            pg.SpawnPerFrame = 4;
         }
 
         public void UnloadContent()
@@ -64,45 +95,30 @@ namespace GameProject.Code
 
         public void Update(GameTime gameTime)
         {
-            for (int i = 0; i < bubbles.Count; i++)
-            {
-                var bubble = bubbles[i];
-                if (bubble.frame < 5)
-                {
-                    bubble.timer += gameTime.ElapsedGameTime;
-
-                    while (bubble.timer.TotalMilliseconds > ANIMATION_FRAME_RATE)
-                    {
-                        bubble.frame++;
-                        bubble.timer -= new TimeSpan(0, 0, 0, 0, ANIMATION_FRAME_RATE);
-                    }
-                }
-                else
-                {
-                    bubbles.Remove(bubble);
-                }
-            }
+            pg.Update(gameTime);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            Rectangle source;
-            game.bubbleFlyweight.bubbles.ForEach(bubble =>
-            {
-                source = new Rectangle(
-                    bubble.frame * FRAME_WIDTH,
-                    0,
-                    FRAME_WIDTH,
-                    FRAME_HEIGHT
-                );
+            pg.Draw();
 
-                spriteBatch.Draw(
-                    texture: bubblesTexture, 
-                    position: bubble.position, 
-                    sourceRectangle: source, 
-                    color: Color.White
-                );
-            });
+            //Rectangle source;
+            //game.bubbleFlyweight.bubbles.ForEach(bubble =>
+            //{
+            //    source = new Rectangle(
+            //        bubble.frame * FRAME_WIDTH,
+            //        0,
+            //        FRAME_WIDTH,
+            //        FRAME_HEIGHT
+            //    );
+
+            //    spriteBatch.Draw(
+            //        texture: bubblesTexture, 
+            //        position: bubble.position, 
+            //        sourceRectangle: source, 
+            //        color: Color.White
+            //    );
+            //});
         }
     }
 }

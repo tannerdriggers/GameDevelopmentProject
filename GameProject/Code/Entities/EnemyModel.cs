@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 
-namespace GameProject.Code
+namespace GameProject.Code.Entities
 {
     /// <summary>
     /// The different types of Enemies
@@ -55,6 +55,11 @@ namespace GameProject.Code
 
             timer = new TimeSpan(0);
             position = new Vector2(game.GraphicsDevice.Viewport.Width + FRAME_WIDTH + game.player.playerPosition.X, enemyFlyweight.random.Next(game.GraphicsDevice.Viewport.Height - 10));
+            hitBox = new BoundingRectangle(
+                position.X + LEFT_COLLISION_OFFSET,
+                position.Y + TOP_COLLISION_OFFSET,
+                FRAME_WIDTH - RIGHT_COLLISION_OFFSET - LEFT_COLLISION_OFFSET,
+                FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET - TOP_COLLISION_OFFSET);
 
             frame = 0;
         }
@@ -72,6 +77,11 @@ namespace GameProject.Code
 
             timer = new TimeSpan(0);
             this.position = position;
+            hitBox = new BoundingRectangle(
+                position.X + LEFT_COLLISION_OFFSET,
+                position.Y + TOP_COLLISION_OFFSET,
+                FRAME_WIDTH - RIGHT_COLLISION_OFFSET - LEFT_COLLISION_OFFSET,
+                FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET - TOP_COLLISION_OFFSET);
 
             frame = 0;
         }

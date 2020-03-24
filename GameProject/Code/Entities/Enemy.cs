@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GameProject.Code.Particles;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -7,16 +8,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameProject.Code
+namespace GameProject.Code.Entities
 {
     /// <summary>
     /// Enemy Flyweight
     /// </summary>
     class Enemy
     {
+        private List<ParticleGenerator> particleGenerators;
+
         public Texture2D fish;
         public Texture2D fish_dart;
         public Texture2D fish_big;
+        public Texture2D bubblesTexture;
 
         /// <summary>
         /// How fast the sprite animations switch
@@ -33,6 +37,7 @@ namespace GameProject.Code
         {
             this.game = game;
             enemies = new List<EnemyModel>();
+            particleGenerators = new List<ParticleGenerator>();
         }
 
         /// <summary>
@@ -51,6 +56,7 @@ namespace GameProject.Code
             fish = Content.Load<Texture2D>("entities/fish");
             fish_big = Content.Load<Texture2D>("entities/fish-big");
             fish_dart = Content.Load<Texture2D>("entities/fish-dart");
+            bubblesTexture = Content.Load<Texture2D>("entities/bubbles");
         }
 
         public void UnloadContent()
@@ -145,10 +151,33 @@ namespace GameProject.Code
 
                 if (enemy.position.X > -game.worldOffset.X - (enemy.FRAME_WIDTH + 5))
                 {
-                    var randomBubbles = random.Next(1000);
+                    var randomBubbles = random.Next(0);
                     if (randomBubbles == 0)
                     {
-                        game.bubbleFlyweight.bubbles.Add(new BubbleModel(game, enemy.position));
+                        var pg = new ParticleGenerator(game.GraphicsDevice, 1000, bubblesTexture)
+                        {
+                            SpawnParticle = (ref Particle particle) =>
+                            {
+                                particle.Position = enemy.position;
+                                particle.Velocity = new Vector2(
+                                    MathHelper.Lerp(-25, 25, (float)random.NextDouble()),
+                                    MathHelper.Lerp(-200, 0, (float)random.NextDouble())
+                                    );
+                            },
+
+                            UpdateParticle = (float deltaT, ref Particle particle) =>
+                            {
+                                particle.Velocity += deltaT * particle.Acceleration;
+                                particle.Position += deltaT * particle.Velocity;
+                                particle.Scale -= deltaT;
+                                particle.Life -= deltaT;
+                            },
+
+                            Emitter = new Vector2(100, 100),
+                            SpawnPerFrame = 4
+                        };
+
+                        particleGenerators.Add(pg);
                     }
 
                     enemy.position.X -= enemy.ENEMY_SPEED;
@@ -169,6 +198,11 @@ namespace GameProject.Code
                     game.score++;
                 }
             }
+
+            particleGenerators.ForEach(particleGenerator =>
+            {
+                particleGenerator.Update(gameTime);
+            });
 
             enemies = enemies.Where(enemy => enemy.alive == true).ToList();
         }
@@ -203,6 +237,11 @@ namespace GameProject.Code
                     effects: SpriteEffects.FlipHorizontally,
                     layerDepth: 1f);
 
+            });
+
+            particleGenerators.ForEach(particleGenerator =>
+            {
+                particleGenerator.Draw();
             });
         }
     }
