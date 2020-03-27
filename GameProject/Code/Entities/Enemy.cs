@@ -48,6 +48,7 @@ namespace GameProject.Code.Entities
         public void AddEnemy(EnemyModel enemy)
         {
             enemies.Add(enemy);
+            AddParticleGenerator(enemy);
             game.TimSort(enemies, 32);
         }
 
@@ -56,7 +57,7 @@ namespace GameProject.Code.Entities
             fish = Content.Load<Texture2D>("entities/fish");
             fish_big = Content.Load<Texture2D>("entities/fish-big");
             fish_dart = Content.Load<Texture2D>("entities/fish-dart");
-            bubblesTexture = Content.Load<Texture2D>("entities/bubbles");
+            bubblesTexture = Content.Load<Texture2D>("entities/Particle");
         }
 
         public void UnloadContent()
@@ -154,30 +155,7 @@ namespace GameProject.Code.Entities
                     var randomBubbles = random.Next(0);
                     if (randomBubbles == 0)
                     {
-                        var pg = new ParticleGenerator(game.GraphicsDevice, 1000, bubblesTexture)
-                        {
-                            SpawnParticle = (ref Particle particle) =>
-                            {
-                                particle.Position = enemy.position;
-                                particle.Velocity = new Vector2(
-                                    MathHelper.Lerp(-25, 25, (float)random.NextDouble()),
-                                    MathHelper.Lerp(-200, 0, (float)random.NextDouble())
-                                    );
-                            },
-
-                            UpdateParticle = (float deltaT, ref Particle particle) =>
-                            {
-                                particle.Velocity += deltaT * particle.Acceleration;
-                                particle.Position += deltaT * particle.Velocity;
-                                particle.Scale -= deltaT;
-                                particle.Life -= deltaT;
-                            },
-
-                            Emitter = new Vector2(100, 100),
-                            SpawnPerFrame = 4
-                        };
-
-                        particleGenerators.Add(pg);
+                        AddParticleGenerator(enemy);
                     }
 
                     enemy.position.X -= enemy.ENEMY_SPEED;
@@ -195,6 +173,14 @@ namespace GameProject.Code.Entities
                 else
                 {
                     enemy.alive = false;
+                    for (int j = 0; i < particleGenerators.Count; i++)
+                    {
+                        if (particleGenerators[j].enemy == enemy)
+                        {
+                            particleGenerators[j].Remove();
+                            particleGenerators.Remove(particleGenerators[j]);
+                        }
+                    }
                     game.score++;
                 }
             }
@@ -205,6 +191,49 @@ namespace GameProject.Code.Entities
             });
 
             enemies = enemies.Where(enemy => enemy.alive == true).ToList();
+        }
+
+        public void AddParticleGenerator(EnemyModel enemy)
+        {
+            var pg = new ParticleGenerator(game, 1, bubblesTexture, enemy)
+            {
+                SpawnParticle = (ref Particle? particle) =>
+                {
+                    var par = new Particle
+                    {
+                        Position = enemy.position,
+                        Velocity = new Vector2(
+                            MathHelper.Lerp(-50, 50, (float)random.NextDouble()), // X between -50 and 50
+                            MathHelper.Lerp(0, 500, (float)random.NextDouble()) // Y between 0 and 100
+                        ),
+                        Acceleration = 0.3f * new Vector2(0, (float)-random.NextDouble()),
+                        Color = Color.Gold,
+                        Scale = 0.8f,
+                        Life = 1000.0f
+                    };
+                    particle = par;
+                },
+
+                UpdateParticle = (float deltaT, ref Particle? particle) =>
+                {
+                    if (particle.HasValue)
+                    {
+                        var par = particle.Value;
+                        par.Velocity += deltaT * par.Acceleration;
+                        par.Position += deltaT * par.Velocity;
+                        par.Scale -= deltaT;
+                        par.Life -= deltaT;
+                        if (par.Life > 0) // Particle is still alive
+                            particle = par;
+                        else
+                            particle = null; // Particle is dead
+                    }
+                },
+
+                SpawnPerFrame = 4
+            };
+
+            particleGenerators.Add(pg);
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -241,7 +270,7 @@ namespace GameProject.Code.Entities
 
             particleGenerators.ForEach(particleGenerator =>
             {
-                particleGenerator.Draw();
+                particleGenerator.Draw(spriteBatch);
             });
         }
     }

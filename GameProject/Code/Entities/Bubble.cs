@@ -45,8 +45,6 @@ namespace GameProject.Code.Entities
 
         public List<BubbleModel> bubbles;
 
-        ParticleGenerator pg;
-
         public Bubble(Game game)
         {
             this.game = game;
@@ -57,31 +55,6 @@ namespace GameProject.Code.Entities
         {
             bubblesTexture = Content.Load<Texture2D>("entities/bubbles");
             bubblesSound = Content.Load<SoundEffect>("entities/Large Bubble");
-
-            // testing
-            pg = new ParticleGenerator(game.GraphicsDevice, 1000, bubblesTexture);
-            pg.SpawnParticle = (ref Particle particle) =>
-            {
-                var enemies = game.enemyFlyweight.enemies;
-                foreach (var enemy in enemies)
-                {
-                    particle.Position = enemy.position;
-                    particle.Velocity = new Vector2(
-                        MathHelper.Lerp(-50, 50, (float)random.NextDouble()),
-                        MathHelper.Lerp(0, 100, (float)random.NextDouble())
-                        );
-                }
-            };
-
-            pg.UpdateParticle = (float deltaT, ref Particle particle) =>
-            {
-                particle.Velocity += deltaT * particle.Acceleration;
-                particle.Position += deltaT * particle.Velocity;
-                particle.Scale -= deltaT;
-                particle.Life -= deltaT;
-            };
-            pg.Emitter = new Vector2(100, 100);
-            pg.SpawnPerFrame = 4;
         }
 
         public void UnloadContent()
@@ -95,12 +68,12 @@ namespace GameProject.Code.Entities
 
         public void Update(GameTime gameTime)
         {
-            pg.Update(gameTime);
+
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            pg.Draw();
+            
 
             //Rectangle source;
             //game.bubbleFlyweight.bubbles.ForEach(bubble =>

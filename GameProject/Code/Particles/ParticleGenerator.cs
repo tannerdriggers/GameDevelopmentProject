@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GameProject.Code.Entities;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,12 @@ namespace GameProject.Code.Particles
 {
     class ParticleGenerator
     {
+        Game game;
+
         /// <summary>
         /// The collection of particles 
         /// </summary>
-        Particle[] particles;
+        Particle?[] particles;
 
         /// <summary>
         /// The texture this particle system uses 
@@ -35,10 +38,7 @@ namespace GameProject.Code.Particles
         /// </summary>
         int nextIndex = 0;
 
-        /// <summary>
-        /// The emitter location for this particle system 
-        /// </summary>
-        public Vector2 Emitter { get; set; }
+        public EnemyModel enemy;
 
         /// <summary>
         /// The rate of particle spawning 
@@ -49,14 +49,14 @@ namespace GameProject.Code.Particles
         /// A delegate for spawning particles
         /// </summary>
         /// <param name="particle">The particle to spawn</param>
-        public delegate void ParticleSpawner(ref Particle particle);
+        public delegate void ParticleSpawner(ref Particle? particle);
 
         /// <summary>
         /// A delegate for updating particles
         /// </summary>
         /// <param name="deltaT">The seconds elapsed between frames</param>
         /// <param name="particle">The particle to update</param>
-        public delegate void ParticleUpdater(float deltaT, ref Particle particle);
+        public delegate void ParticleUpdater(float deltaT, ref Particle? particle);
 
         /// <summary>
         /// Holds a delegate to use when spawning a new particle
@@ -75,10 +75,12 @@ namespace GameProject.Code.Particles
         /// <param name="graphicsDevice">The graphics device</param>
         /// <param name="size">The maximum number of particles in the system</param>
         /// <param name="texture">The texture of the particles</param> 
-        public ParticleGenerator(GraphicsDevice graphicsDevice, int size, Texture2D texture)
+        public ParticleGenerator(Game game, int size, Texture2D texture, EnemyModel enemy)
         {
-            particles = new Particle[size];
-            spriteBatch = new SpriteBatch(graphicsDevice);
+            this.game = game;
+            this.enemy = enemy;
+            particles = new Particle?[size];
+            spriteBatch = new SpriteBatch(game.GraphicsDevice);
             this.texture = texture;
         }
 
@@ -96,7 +98,7 @@ namespace GameProject.Code.Particles
             for (int i = 0; i < SpawnPerFrame; i++)
             {
                 // Create the particle
-                SpawnParticle(ref particles[nextIndex]);
+                SpawnParticle(ref particles[nextIndex] );
 
                 // Advance the index 
                 nextIndex++;
@@ -108,32 +110,47 @@ namespace GameProject.Code.Particles
             for (int i = 0; i < particles.Length; i++)
             {
                 // Skip any "dead" particles
-                if (particles[i].Life <= 0) continue;
+                if (particles[i]?.Life <= 0) continue;
 
                 // Update the individual particle
                 UpdateParticle(deltaT, ref particles[i]);
             }
         }
 
+        public void Remove()
+        {
+            for (int i = 0; i < particles.Length; i++)
+            {
+                particles[i] = null;
+            }
+            particles = null;
+        }
+
         /// <summary>
         /// Draw the active particles in the particle system
         /// </summary>
-        public void Draw()
+        public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive);
+            var t = Matrix.CreateTranslation(game.worldOffset.X, game.worldOffset.Y, 0);
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, null, null, null, null, t);
 
             // TODO: Draw particles
             // Iterate through the particles
             for (int i = 0; i < particles.Length; i++)
             {
-                // Skip any "dead" particles
-                if (particles[i].Life <= 0) continue;
-
                 // Draw the individual particles
-                spriteBatch.Draw(texture, particles[i].Position, null, particles[i].Color, 0f, Vector2.Zero, particles[i].Scale, SpriteEffects.None, 0);
+                if (particles[i].HasValue)
+                {
+                    // Skip any "dead" particles
+                    if (particles[i].Value.Life <= 0) continue;
+
+                    spriteBatch.Draw(texture, particles[i].Value.Position, null, color: particles[i].Value.Color, 0f, Vector2.Zero, particles[i].Value.Scale, SpriteEffects.None, 0);
+                }
             }
 
             spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, t);
         }
     }
 }

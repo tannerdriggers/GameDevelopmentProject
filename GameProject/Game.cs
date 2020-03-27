@@ -34,7 +34,7 @@ namespace GameProject
         private TimeSpan timer;
         private int respawnRate;
         private Vector2 scorePosition;
-        private string helpText = "Score points by avoiding the fish.\nPress Enter to Start.";
+        private string helpText = "Score points by avoiding the fish.\n     Press Enter to Start.";
         private bool gameStarted = false;
 
         public Game()
