@@ -36,7 +36,6 @@ namespace GameProject
         public Vector2 worldOffset;
 
         public Enemy enemyFlyweight;
-        public Bubble bubbleFlyweight;
         public Background backgroundFlyweight;
         public List<GameMapContent> levels;
         public Player player;
@@ -77,7 +76,6 @@ namespace GameProject
             player.scale = 1f;
 
             enemyFlyweight = new Enemy(this);
-            bubbleFlyweight = new Bubble(this);
             backgroundFlyweight = new Background(this);
 
             timer = new TimeSpan(0);
@@ -106,7 +104,6 @@ namespace GameProject
             levels.Add(JsonConvert.DeserializeObject<GameMapContent>(json));
 
             player.LoadContent(Content);
-            bubbleFlyweight.LoadContent(Content);
             enemyFlyweight.LoadContent(Content);
             backgroundFlyweight.LoadContent();
 
@@ -122,7 +119,6 @@ namespace GameProject
         protected override void UnloadContent()
         {
             watery_cave_loop.Dispose();
-            bubbleFlyweight.UnloadContent();
             enemyFlyweight.UnloadContent();
             player.UnloadContent();
             spriteBatch.Dispose();
@@ -176,7 +172,7 @@ namespace GameProject
                 {
                     timer -= new TimeSpan(0, 0, 0, 0, respawnRate);
                     // Add an enemy to the list of enemies
-                    // enemyFlyweight.AddEnemy(new EnemyModel(this));
+                    enemyFlyweight.AddEnemy(new EnemyModel(this));
                 }
 
                 enemyFlyweight.Update(gameTime);
@@ -235,7 +231,6 @@ namespace GameProject
         private void EndGame()
         {
             enemyFlyweight = new Enemy(this);
-            bubbleFlyweight = new Bubble(this);
 
             helpText = "Game Over! Press Enter to Play Again.\nYour Final Score is ";
             var size = scoreFont.MeasureString(helpText + score.ToString());

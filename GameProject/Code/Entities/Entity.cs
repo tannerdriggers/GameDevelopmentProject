@@ -14,7 +14,7 @@ namespace GameProject.Code.Entities
     {
         public abstract Game Game { get; set; }
 
-        public Vector2 Position { get; set; }
+        public Vector2 Position;
 
         public Random random = new Random();
 
@@ -52,14 +52,13 @@ namespace GameProject.Code.Entities
 
         public void AddParticleGenerator(Entity entity, Texture2D texture, Particle? particle)
         {
-            var pg = new ParticleGenerator(Game, entity, 1, texture,
+            var pg = new ParticleGenerator(Game, entity, 1,
                 spawnParticle: (ref Particle? par) =>
                 {
                     Particle tempParticle = new Particle();
                     if (particle.HasValue)
                     {
                         tempParticle = particle.Value;
-                        tempParticle.Position = entity.Position;
                     }
                     par = tempParticle;
                 },
@@ -69,7 +68,6 @@ namespace GameProject.Code.Entities
                     {
                         var tempParticle = par.Value;
                         tempParticle.Velocity += deltaT * tempParticle.Acceleration;
-                        tempParticle.Position += deltaT * tempParticle.Velocity;
                         tempParticle.Scale += deltaT;
                         tempParticle.Life--;
                         par = tempParticle;
@@ -82,12 +80,11 @@ namespace GameProject.Code.Entities
 
         public void AddParticleGenerator(Vector2 position, Texture2D texture, Color color, float scale, float life)
         {
-            var pg = new ParticleGenerator(Game, 1, texture,
+            var pg = new ParticleGenerator(Game, 1,
                 (ref Particle? particle) =>
                 {
-                    var par = new Particle
+                    var par = new Particle()
                     {
-                        Position = position,
                         Velocity = new Vector2(
                             MathHelper.Lerp(-50, 50, (float)random.NextDouble()), // X between -50 and 50
                             MathHelper.Lerp(0, 500, (float)random.NextDouble()) // Y between 0 and 100
@@ -105,7 +102,6 @@ namespace GameProject.Code.Entities
                     {
                         var par = particle.Value;
                         par.Velocity += deltaT * par.Acceleration;
-                        par.Position += deltaT * par.Velocity;
                         par.Scale -= deltaT;
                         par.Life -= deltaT;
                         if (par.Life > 0) // Particle is still alive
@@ -119,7 +115,7 @@ namespace GameProject.Code.Entities
             //Game.ParticleEngines.Add(pg);
         }
 
-        public abstract void Update(GameTime gameTime);
         public abstract void Draw(SpriteBatch spriteBatch);
+        public abstract void Update(GameTime gameTime);
     }
 }

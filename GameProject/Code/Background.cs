@@ -30,7 +30,7 @@ namespace GameProject.Code
 
         public void Update(GameTime gameTime)
         {
-            if (game.player.playerPosition.X + ((backgrounds.Count - 1) * game.GraphicsDevice.Viewport.Width) > 50)
+            if (game.player.Position.X + ((backgrounds.Count - 1) * game.GraphicsDevice.Viewport.Width) > 50)
             {
                 backgrounds.Enqueue(
                     new BackgroundModel(

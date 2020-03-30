@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Audio;
+using GameProject.Code.Entities.Particles;
 
 namespace GameProject.Code.Entities.Alive
 {
@@ -22,8 +23,7 @@ namespace GameProject.Code.Entities.Alive
     class Player : LivingCreature
     {
         public override Game Game { get; set; }
-        public Vector2 playerPosition;
-        public BoundingRectangle playerHitbox;
+        public int PlayerScreenOffset { get; } = 50;
 
         private Texture2D playerSpriteSheet;
         public playerState playerState;
@@ -31,16 +31,19 @@ namespace GameProject.Code.Entities.Alive
         private int frame;
         private SpriteEffects effect;
         private SoundEffect playerDeathSound;
+        private PlayerParticles _playerParticleGenerator;
 
         public Player(Game game)
         {
             Game = game;
             playerState = playerState.swimming;
             timer = new TimeSpan(0);
-            playerPosition = new Vector2(50, (game.GraphicsDevice.Viewport.Height / 2));
-            playerHitbox = new BoundingRectangle(playerPosition.X, playerPosition.Y, FRAME_WIDTH, FRAME_HEIGHT);
+            Position = new Vector2(PlayerScreenOffset, (game.GraphicsDevice.Viewport.Height / 2));
+            hitBox = new BoundingRectangle(Position.X, Position.Y, FRAME_WIDTH, FRAME_HEIGHT);
             frame = 0;
             effect = SpriteEffects.None;
+
+            _playerParticleGenerator = new PlayerParticles(Game);
 
             TOP_COLLISION_OFFSET = 29;
             BOTTOM_COLLISION_OFFSET = 32;
@@ -52,6 +55,8 @@ namespace GameProject.Code.Entities.Alive
         {
             playerSpriteSheet = Content.Load<Texture2D>("entities/player");
             playerDeathSound = Content.Load<SoundEffect>("entities/death");
+
+            _playerParticleGenerator.LoadContent(Content);
         }
 
         public void UnloadContent()
@@ -68,29 +73,30 @@ namespace GameProject.Code.Entities.Alive
             KeyboardState keyboard = Keyboard.GetState();
             float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            playerHitbox = new BoundingRectangle(
-                playerPosition.X + LEFT_COLLISION_OFFSET,
-                playerPosition.Y + TOP_COLLISION_OFFSET,
+            hitBox = new BoundingRectangle(
+                Position.X + LEFT_COLLISION_OFFSET,
+                Position.Y + TOP_COLLISION_OFFSET,
                 FRAME_WIDTH - RIGHT_COLLISION_OFFSET - LEFT_COLLISION_OFFSET,
                 FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET - TOP_COLLISION_OFFSET);
 
             // State pattern
             if (!Game.gameFinished)
             {
-                playerPosition.X = -Game.worldOffset.X + 100;
+                _playerParticleGenerator.Update(gameTime);
+                Position.X = -Game.worldOffset.X + PlayerScreenOffset;
                 playerState = playerState.swimming;
 
                 if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
-                    && playerHitbox.Y + playerHitbox.Height < Game.GraphicsDevice.Viewport.Height)
+                    && hitBox.Y + hitBox.Height < Game.GraphicsDevice.Viewport.Height)
                 {
-                    playerPosition.Y += delta * SPEED.Y;
+                    Position.Y += delta * SPEED.Y;
                     effect = SpriteEffects.None;
                 }
 
                 if ((keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W))
-                    && playerHitbox.Y > 0)
+                    && hitBox.Y > 0)
                 {
-                    playerPosition.Y -= delta * SPEED.Y;
+                    Position.Y -= delta * SPEED.Y;
                     effect = SpriteEffects.None;
                 }
 
@@ -161,14 +167,14 @@ namespace GameProject.Code.Entities.Alive
                 .enemyFlyweight
                 .enemies
                 .AsQueryable()
-                .Where(enemy => enemy.Position.Y < playerPosition.Y + FRAME_HEIGHT + 20 && enemy.Position.Y + enemy.FRAME_HEIGHT + 20 > playerPosition.Y)
+                .Where(enemy => enemy.Position.Y < Position.Y + FRAME_HEIGHT + 20 && enemy.Position.Y + enemy.FRAME_HEIGHT + 20 > Position.Y)
                 .ToList()
                 .Exists(enemy =>
                     {
-                        return (enemy.hitBox.X <= playerHitbox.X + playerHitbox.Width                                     // player right side
-                                && enemy.hitBox.X + enemy.hitBox.Width >= playerHitbox.X                  // player left side
-                                && enemy.hitBox.Y <= playerHitbox.Y + playerHitbox.Height                                 // player bottom
-                                && enemy.hitBox.Y + enemy.hitBox.Height >= playerHitbox.Y);               // player top
+                        return (enemy.hitBox.X <= hitBox.X + hitBox.Width                                     // player right side
+                                && enemy.hitBox.X + enemy.hitBox.Width >= hitBox.X                  // player left side
+                                && enemy.hitBox.Y <= hitBox.Y + hitBox.Height                                 // player bottom
+                                && enemy.hitBox.Y + enemy.hitBox.Height >= hitBox.Y);               // player top
                     });
         }
 
@@ -188,9 +194,12 @@ namespace GameProject.Code.Entities.Alive
             //    Color.Black);
 #endif
 
+            if (!Game.gameFinished)
+                _playerParticleGenerator.Draw(spriteBatch);
+
             spriteBatch.Draw(
                 texture: playerSpriteSheet, 
-                position: playerPosition, 
+                position: Position, 
                 sourceRectangle: source, 
                 color: Color.White, 
                 rotation: 0f, 

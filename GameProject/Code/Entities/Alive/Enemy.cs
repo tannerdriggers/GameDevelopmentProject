@@ -39,27 +39,46 @@ namespace GameProject.Code.Entities.Alive
         public void AddEnemy(EnemyModel enemy)
         {
             enemies.Add(enemy);
-            AddBubbles(enemy);
+            //AddBubbles(enemy);
             Game.TimSort(enemies, 32);
         }
 
         public void AddBubbles(EnemyModel enemy)
         {
-            var textures = new List<Texture2D>()
-            {
-                bubblesTexture
-            };
+            var pg = new ParticleGenerator(Game, 5,
+                spawnParticle: (ref Particle? part) =>
+                {
+                    var particle = new Particle
+                    {
+                        Position = enemy.Position + new Vector2(-5f, enemy.FRAME_HEIGHT / 2),
+                        Velocity = new Vector2(
+                        0f,
+                        MathHelper.Lerp(-1f, -0.1f, (float)random.NextDouble())
+                        ),
+                        Acceleration = Vector2.Zero,
+                        Color = Color.Aqua,
+                        Scale = MathHelper.Lerp(0.004f, 0.015f, (float)random.NextDouble()),// 0.005f + (float)(random.NextDouble() / 100);
+                        Life = 100f + (float)(random.NextDouble() * 25),
+                        Texture = bubblesTexture
+                    };
 
-            var pe = new ParticleEngine(Game, textures, enemy.Position)
-            {
-                NumberOfSecondsPerSpawn = 0.2f,
-                EmitterLife = 3f,
-                SPEED = new Vector2(0, -250),
-                ParticleLife = 2f,
-                ParticleScale = 0.007f
-            };
+                    part = particle;
+                },
+                updateParticle: (float deltaT, ref Particle? part) =>
+                {
+                    if (part.HasValue)
+                    {
+                        var particle = part.Value;
+                        particle.Velocity += particle.Acceleration;
+                        particle.Position += particle.Velocity;
+                        particle.Life -= deltaT;
+                        part = particle;
+                    }
+                }
+            )
+            { Life = 10f };
 
-            enemy.ParticleEngines.Add(pe);
+            enemy.ParticleEngines.Add(pg);
         }
 
         public void LoadContent(ContentManager Content)
@@ -173,7 +192,7 @@ namespace GameProject.Code.Entities.Alive
 
                 if (enemy.Position.X > -Game.worldOffset.X - (enemy.FRAME_WIDTH + 5))
                 {
-                    var randomBubbles = random.Next(1000);
+                    var randomBubbles = random.Next(200);
                     if (randomBubbles == 0)
                     {
                         AddBubbles(enemy);

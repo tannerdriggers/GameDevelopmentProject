@@ -16,14 +16,15 @@ namespace GameProject.Code.Entities.Particles
         Particle?[] particles;
 
         /// <summary>
-        /// The texture this particle system uses 
-        /// </summary>
-        Texture2D texture;
-
-        /// <summary>
         /// The next index in the particles array to use when spawning a particle
         /// </summary>
         int nextIndex = 0;
+
+        /// <summary>
+        /// How long the particle generator stays active
+        /// DEFAULT: (null) never ends
+        /// </summary>
+        public float? Life { get; set; }
 
         public Entity entity;
 
@@ -72,14 +73,12 @@ namespace GameProject.Code.Entities.Particles
             Game game,
             Entity entity,
             int size,
-            Texture2D texture,
             ParticleSpawner spawnParticle,
             ParticleUpdater updateParticle)
         {
             Game = game;
             this.entity = entity;
             particles = new Particle?[size];
-            this.texture = texture;
             SpawnParticle = spawnParticle;
             UpdateParticle = updateParticle;
         }
@@ -96,13 +95,11 @@ namespace GameProject.Code.Entities.Particles
         public ParticleGenerator(
             Game game,
             int size,
-            Texture2D texture,
             ParticleSpawner spawnParticle,
             ParticleUpdater updateParticle)
         {
             Game = game;
             particles = new Particle?[size];
-            this.texture = texture;
             SpawnParticle = spawnParticle;
             UpdateParticle = updateParticle;
         }
@@ -114,29 +111,42 @@ namespace GameProject.Code.Entities.Particles
         /// <param name="gameTime">A structure representing time in the game</param>
         public override void Update(GameTime gameTime)
         {
-            // Make sure our delegate properties are set
-            if (SpawnParticle == null || UpdateParticle == null) return;
-
-            // Create the particle
-            SpawnParticle(ref particles[nextIndex]);
-
-            // Advance the index 
-            nextIndex++;
-            if (nextIndex > particles.Length - 1) nextIndex = 0;
+            var life = Life;
+            if (!Life.HasValue)
+            {
+                life = 10;
+            }
             
+            if (life.Value > 0)
+            {
+                // Make sure our delegate properties are set
+                if (SpawnParticle == null || UpdateParticle == null) return;
+
+                // Create the particle
+                SpawnParticle(ref particles[nextIndex]);
+
+                // Advance the index 
+                nextIndex++;
+                if (nextIndex > particles.Length - 1) nextIndex = 0;
+
+                Life--;
+            }
+
             // Part 2: Update Particles
-            float deltaT = 0.5f; // (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float deltaT = 0.2f; // (float)gameTime.ElapsedGameTime.TotalSeconds;
             for (int i = 0; i < particles.Length; i++)
             {
-                // delete any "dead" particles
-                if (particles[i]?.Life <= 0)
+                if (particles[i].HasValue)
                 {
-                    particles[i] = null;
-                }
-                else
-                {
-                    // Update the individual particle
-                    UpdateParticle(deltaT, ref particles[i]);
+                    // delete any "dead" particles
+                    if (particles[i].Value.Life <= 0)
+                    {
+                        particles[i] = null;
+                    }
+                    else
+                    {
+                        UpdateParticle(deltaT, ref particles[i]);
+                    }
                 }
             }
         }
@@ -155,11 +165,6 @@ namespace GameProject.Code.Entities.Particles
         /// </summary>
         public override void Draw(SpriteBatch spriteBatch)
         {
-            //spriteBatch.End();
-            //var t = Matrix.CreateTranslation(game.worldOffset.X, game.worldOffset.Y, 0);
-            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, null, null, null, null, t);
-
-            // TODO: Draw particles
             // Iterate through the particles
             for (int i = 0; i < particles.Length; i++)
             {
@@ -167,19 +172,12 @@ namespace GameProject.Code.Entities.Particles
                 if (particles[i].HasValue)
                 {
                     // Skip any "dead" particles
-                    if (particles[i].Value.Life <= 0)
+                    if (particles[i].Value.Life > 0)
                     {
-                        particles[i] = null;
-                    }
-                    else
-                    {
-                        spriteBatch.Draw(texture, particles[i].Value.Position, null, color: particles[i].Value.Color, 0f, Vector2.Zero, particles[i].Value.Scale, SpriteEffects.None, 0);
+                        particles[i].Value.Draw(spriteBatch);
                     }
                 }
             }
-
-            //spriteBatch.End();
-            //spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, t);
         }
     }
 }

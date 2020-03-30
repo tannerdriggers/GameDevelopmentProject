@@ -8,7 +8,8 @@ namespace GameProject.Code.Entities.Particles
         /// <summary>
         /// The current position of the particle
         /// </summary>
-        public Vector2 Position;
+        public Vector2 Position { get; set; }
+        //private Vector2 _position;
 
         /// <summary>
         /// The current velocity of the particle

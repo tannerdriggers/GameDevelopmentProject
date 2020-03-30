@@ -40,7 +40,7 @@ namespace GameProject.Code.Entities.Alive
             enemyFlyweight = game.enemyFlyweight;
             Alive = true;
             SPEED = new Vector2(2, 0);
-            Position = new Vector2(game.GraphicsDevice.Viewport.Width + FRAME_WIDTH + game.player.playerPosition.X, enemyFlyweight.random.Next(game.GraphicsDevice.Viewport.Height - 10));
+            Position = new Vector2(game.GraphicsDevice.Viewport.Width + FRAME_WIDTH + game.player.Position.X, enemyFlyweight.random.Next(game.GraphicsDevice.Viewport.Height - 10));
 
             Array values = Enum.GetValues(typeof(EnumEnemyType));
             enemyType = (EnumEnemyType)values.GetValue(enemyFlyweight.random.Next(values.Length));
