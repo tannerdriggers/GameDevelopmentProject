@@ -10,8 +10,6 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
 
-using GameProject.Code.Particles;
-
 namespace GameProject.Code.Entities
 {
     /// <summary>

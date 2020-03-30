@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System;
 
 using GameProject.Code;
-using GameLibrary;
 using Newtonsoft.Json;
-using System.IO;
 using GameProject.Code.Entities;
+using GameProject.Code.Entities.Particles;
+using GameProject.Code.Entities.Alive;
 
 namespace GameProject
 {
@@ -19,22 +19,36 @@ namespace GameProject
     /// </summary>
     class Game : Microsoft.Xna.Framework.Game
     {
+        /// <summary>
+        /// Number of Frames per second (FPS)
+        /// </summary>
+        public double Framerate => smartFPS.Framerate;
+        private SmartFramerate smartFPS;
+
         public bool gameFinished;
         public int score;
+
+        /// <summary>
+        /// Offset of the world to the camera
+        /// -- It is negative to standard as it calculates the
+        /// -- offset from the camera to the origin
+        /// </summary>
         public Vector2 worldOffset;
+
         public Enemy enemyFlyweight;
         public Bubble bubbleFlyweight;
         public Background backgroundFlyweight;
         public List<GameMapContent> levels;
         public Player player;
 
+        private MouseParticles mouseParticles;
         private SpriteBatch spriteBatch;
         private Song watery_cave_loop;
         private SpriteFont scoreFont;
         private TimeSpan timer;
         private int respawnRate;
         private Vector2 scorePosition;
-        private string helpText = "Score points by avoiding the fish.\n     Press Enter to Start.";
+        private string helpText = "Score points by avoiding the fish.\n   Press Enter or Click to Start.";
         private bool gameStarted = false;
 
         public Game()
@@ -51,10 +65,10 @@ namespace GameProject
         /// </summary>
         protected override void Initialize()
         {
+            mouseParticles = new MouseParticles(this);
+            smartFPS = new SmartFramerate(5);
             gameFinished = false;
-
             levels = new List<GameMapContent>();
-
             worldOffset = new Vector2(50, 0);
 
             if (player == null)
@@ -82,7 +96,7 @@ namespace GameProject
 #if DEBUG
             VisualDebugging.LoadContent(Content);
 #endif
-
+            mouseParticles.LoadContent(Content);
             spriteBatch = new SpriteBatch(GraphicsDevice);
             watery_cave_loop = Content.Load<Song>("watery_cave_loop");
             scoreFont = Content.Load<SpriteFont>("score");
@@ -125,7 +139,8 @@ namespace GameProject
                 Exit();
 
             if ((GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed 
-                || Keyboard.GetState().IsKeyDown(Keys.Enter))
+                || Keyboard.GetState().IsKeyDown(Keys.Enter)
+                || Mouse.GetState().LeftButton == ButtonState.Pressed)
                 && (!gameStarted || gameFinished))
             {
                 gameStarted = true;
@@ -145,6 +160,7 @@ namespace GameProject
 
             player.Update(gameTime);
             backgroundFlyweight.Update(gameTime);
+            mouseParticles.Update(gameTime);
             if (!gameStarted)
             {
                 var size = scoreFont.MeasureString(helpText + score.ToString());
@@ -160,7 +176,7 @@ namespace GameProject
                 {
                     timer -= new TimeSpan(0, 0, 0, 0, respawnRate);
                     // Add an enemy to the list of enemies
-                    enemyFlyweight.AddEnemy(new EnemyModel(this));
+                    // enemyFlyweight.AddEnemy(new EnemyModel(this));
                 }
 
                 enemyFlyweight.Update(gameTime);
@@ -181,6 +197,10 @@ namespace GameProject
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+#if DEBUG
+            smartFPS.Update(gameTime.ElapsedGameTime.TotalSeconds);
+#endif
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Calculate and apply the world/view transform
@@ -196,6 +216,12 @@ namespace GameProject
             player.Draw(spriteBatch);
             spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), new Vector2(scorePosition.X - 2, scorePosition.Y) - worldOffset, Color.Black);
             spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), scorePosition - worldOffset, Color.White);
+
+#if DEBUG // Draws the framerate on the screen
+            spriteBatch.DrawString(scoreFont, string.Format("{0:0,0}", smartFPS.Framerate), new Vector2(10, 10) - worldOffset, Color.YellowGreen);
+#endif
+
+            mouseParticles.Draw(spriteBatch);
 
             // End Drawing
             spriteBatch.End();
@@ -263,7 +289,7 @@ namespace GameProject
             {
                 var temp = arr[i];
                 int j = i - 1;
-                while (j >= left && arr[j].position.Y > temp.position.Y)
+                while (j >= left && arr[j].Position.Y > temp.Position.Y)
                 {
                     arr[j + 1] = arr[j];
                     j--;
@@ -299,7 +325,7 @@ namespace GameProject
             // in larger sub array  
             while (i < len1 && j < len2)
             {
-                if (left[i].position.Y <= right[j].position.Y)
+                if (left[i].Position.Y <= right[j].Position.Y)
                 {
                     arr[k] = left[i];
                     i++;

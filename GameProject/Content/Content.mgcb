@@ -27,18 +27,6 @@
 /processorParam:TextureFormat=Color
 /build:background.png
 
-#begin entities/bubbles.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:entities/bubbles.png
-
 #begin entities/death.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -146,6 +134,30 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:entities/player.png
+
+#begin entities/—Pngtree—blue bubble transparent_3610323.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:entities/—Pngtree—blue bubble transparent_3610323.png;entities/bubble.png
+
+#begin entities/—Pngtree—round blue bubble transparent bubble_3883793 (1).png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:entities/—Pngtree—round blue bubble transparent bubble_3883793 (1).png;entities/bubbles.png
 
 #begin level0.json
 /importer:GameMapImporter
