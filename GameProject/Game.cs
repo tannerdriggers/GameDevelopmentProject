@@ -109,7 +109,9 @@ namespace GameProject
 
             player.playerState = playerState.swimming;
 
+#if DEBUG
             enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(50, 200)));
+#endif
         }
 
         /// <summary>
