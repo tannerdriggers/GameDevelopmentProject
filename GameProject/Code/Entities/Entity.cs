@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 
 namespace GameProject.Code.Entities
 {
-    abstract class Entity
+    public class Entity : ISprite
     {
-        public abstract Game Game { get; set; }
+        public Game Game;
+
+        public Texture2D Texture { get; set; }
 
         public Vector2 Position;
 
@@ -49,6 +51,12 @@ namespace GameProject.Code.Entities
         /// Size of the player
         /// </summary>
         public float scale = 1f;
+
+        public Entity(Game game, Texture2D texture)
+        {
+            Texture = texture;
+            Game = game;
+        }
 
         public void AddParticleGenerator(Entity entity, Texture2D texture, Particle? particle)
         {
@@ -115,7 +123,12 @@ namespace GameProject.Code.Entities
             //Game.ParticleEngines.Add(pg);
         }
 
-        public abstract void Draw(SpriteBatch spriteBatch);
-        public abstract void Update(GameTime gameTime);
+        public void Draw(SpriteBatch spriteBatch)
+        {
+        }
+
+        public void Update(GameTime gameTime)
+        {
+        }
     }
 }

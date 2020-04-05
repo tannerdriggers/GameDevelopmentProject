@@ -11,13 +11,19 @@ using Newtonsoft.Json;
 using GameProject.Code.Entities;
 using GameProject.Code.Entities.Particles;
 using GameProject.Code.Entities.Alive;
+using GameProject.Code.Entities.Alive.Player;
+using GameProject.Code.JSONObjects;
+using GameProject.Code.Scrolling;
+
+using Entity = GameProject.Code.Entities.Entity;
+using JSONEntity = GameProject.Code.JSONObjects.Entity;
 
 namespace GameProject
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    class Game : Microsoft.Xna.Framework.Game
+    public class Game : Microsoft.Xna.Framework.Game
     {
         /// <summary>
         /// Number of Frames per second (FPS)
@@ -36,6 +42,7 @@ namespace GameProject
         public Vector2 worldOffset;
 
         public Enemy enemyFlyweight;
+        public Background midgroundFlyweight;
         public Background backgroundFlyweight;
         public List<GameMapContent> levels;
         public Player player;
@@ -64,19 +71,16 @@ namespace GameProject
         /// </summary>
         protected override void Initialize()
         {
-            mouseParticles = new MouseParticles(this);
+            mouseParticles = new MouseParticles(this, null);
             smartFPS = new SmartFramerate(5);
             gameFinished = false;
             levels = new List<GameMapContent>();
             worldOffset = new Vector2(50, 0);
 
             if (player == null)
-                player = new Player(this);
+                player = new Player(this, null);
 
             player.scale = 1f;
-
-            enemyFlyweight = new Enemy(this);
-            backgroundFlyweight = new Background(this);
 
             timer = new TimeSpan(0);
             respawnRate = 400;
@@ -91,11 +95,8 @@ namespace GameProject
         /// </summary>
         protected override void LoadContent()
         {
-#if DEBUG
-            VisualDebugging.LoadContent(Content);
-#endif
-            mouseParticles.LoadContent(Content);
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
             watery_cave_loop = Content.Load<Song>("watery_cave_loop");
             scoreFont = Content.Load<SpriteFont>("score");
 
@@ -103,15 +104,58 @@ namespace GameProject
             var json = Content.Load<string>("level0");
             levels.Add(JsonConvert.DeserializeObject<GameMapContent>(json));
 
-            player.LoadContent(Content);
-            enemyFlyweight.LoadContent(Content);
-            backgroundFlyweight.LoadContent();
+            // Load Mouse Particles
+            var mouseLayer = mouseParticles.LoadContent(Content);
+            Components.Add(mouseLayer);
 
+            // Load Player
             player.playerState = playerState.swimming;
+            var playerLayer = player.LoadContent(Content);
+            Components.Add(playerLayer);
+
+            // Load Enemies
+            enemyFlyweight = new Enemy(this, null);
+            var enemyLayer = enemyFlyweight.LoadContent(Content);
+            Components.Add(enemyLayer);
+
+            // Load midground
+            var midgroundTextures = new Texture2D[]
+            {
+                Content.Load<Texture2D>("background")
+            };
+            var midgroundSprite = new StaticSprite[]
+            {
+                new StaticSprite(midgroundTextures[0])
+            };
+            var midgroundLayer = new ParallaxLayer(this);
+            midgroundLayer.Sprites.AddRange(midgroundSprite);
+            midgroundLayer.DrawOrder = 1;
+            Components.Add(midgroundLayer);
+
+            // Load Background
+            var backgroundTextures = new Texture2D[]
+            {
+                Content.Load<Texture2D>("midground")
+            };
+            var backgroundSprite = new Entity[] {
+                new Entity(this, backgroundTextures[0])
+            };
+            var backgroundLayer = new ParallaxLayer(this);
+            backgroundLayer.Sprites.AddRange(backgroundSprite);
+            backgroundLayer.DrawOrder = 0;
+            Components.Add(backgroundLayer);
 
 #if DEBUG
+            VisualDebugging.LoadContent(Content);
             enemyFlyweight.AddEnemy(new EnemyModel(this, new Vector2(50, 200)));
 #endif
+
+            mouseLayer.ScrollController = new PlayerTrackingScrollController(player, 0f);
+            playerLayer.ScrollController = new PlayerTrackingScrollController(player, 1f);
+            enemyLayer.ScrollController = new PlayerTrackingScrollController(player, 1f);
+            midgroundLayer.ScrollController = new PlayerTrackingScrollController(player, 0f);
+            backgroundLayer.ScrollController = new PlayerTrackingScrollController(player, 0.5f);
+            
         }
 
         /// <summary>
@@ -158,6 +202,7 @@ namespace GameProject
 
             player.Update(gameTime);
             backgroundFlyweight.Update(gameTime);
+            midgroundFlyweight.Update(gameTime);
             mouseParticles.Update(gameTime);
             if (!gameStarted)
             {
@@ -208,10 +253,10 @@ namespace GameProject
             // Begin Drawing
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, t);
 
-            backgroundFlyweight.Draw(spriteBatch);
-            enemyFlyweight.Draw(spriteBatch);
+            //backgroundFlyweight.Draw(spriteBatch);
+            //enemyFlyweight.Draw(spriteBatch);
             // bubbleFlyweight.Draw(spriteBatch);
-            player.Draw(spriteBatch);
+            //player.Draw(spriteBatch);
             spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), new Vector2(scorePosition.X - 2, scorePosition.Y) - worldOffset, Color.Black);
             spriteBatch.DrawString(scoreFont, helpText + (gameStarted ? score.ToString() : ""), scorePosition - worldOffset, Color.White);
 
@@ -219,7 +264,7 @@ namespace GameProject
             spriteBatch.DrawString(scoreFont, string.Format("{0:0,0}", smartFPS.Framerate), new Vector2(10, 10) - worldOffset, Color.YellowGreen);
 #endif
 
-            mouseParticles.Draw(spriteBatch);
+            //mouseParticles.Draw(spriteBatch);
 
             // End Drawing
             spriteBatch.End();
@@ -232,7 +277,7 @@ namespace GameProject
         /// </summary>
         private void EndGame()
         {
-            enemyFlyweight = new Enemy(this);
+            enemyFlyweight = new Enemy(this, null);
 
             helpText = "Game Over! Press Enter to Play Again.\nYour Final Score is ";
             var size = scoreFont.MeasureString(helpText + score.ToString());

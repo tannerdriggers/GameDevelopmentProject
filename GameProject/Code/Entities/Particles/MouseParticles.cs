@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GameProject.Code.Scrolling;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -15,14 +16,11 @@ namespace GameProject.Code.Entities.Particles
         private Texture2D _particleTexture;
         private ParticleGenerator _particleGenerator;
 
-        public override Game Game { get; set; }
-
-        public MouseParticles(Game game)
+        public MouseParticles(Game game, Texture2D texture) : base(game, texture)
         {
-            Game = game;
         }
 
-        public void LoadContent(ContentManager Content)
+        public ParallaxLayer LoadContent(ContentManager Content)
         {
             _particleTexture = Content.Load<Texture2D>("entities/Particle");
 
@@ -56,9 +54,14 @@ namespace GameProject.Code.Entities.Particles
                     }
                 }
             );
+
+            var particleSprite = new ParallaxLayer(Game);
+            particleSprite.Sprites.Add(this);
+            particleSprite.DrawOrder = 5;
+            return particleSprite;
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.End();
             var t = Matrix.CreateTranslation(Game.worldOffset.X, Game.worldOffset.Y, 0);
@@ -68,7 +71,7 @@ namespace GameProject.Code.Entities.Particles
             spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, null, null, t);
         }
 
-        public override void Update(GameTime gameTime)
+        public new void Update(GameTime gameTime)
         {
             _particleGenerator.Update(gameTime);
         }

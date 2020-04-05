@@ -1,4 +1,5 @@
 ﻿using GameProject.Code.Entities.Particles;
+using GameProject.Code.Scrolling;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,7 +15,7 @@ namespace GameProject.Code.Entities.Alive
     /// <summary>
     /// Enemy Flyweight
     /// </summary>
-    class Enemy : LivingCreature
+    public class Enemy : LivingCreature
     {
         public Texture2D fish;
         public Texture2D fish_dart;
@@ -23,11 +24,8 @@ namespace GameProject.Code.Entities.Alive
 
         public List<EnemyModel> enemies;
 
-        public override Game Game { get; set; }
-
-        public Enemy(Game game)
+        public Enemy(Game game, Texture2D texture) : base(game, texture)
         {
-            Game = game;
             enemies = new List<EnemyModel>();
         }
 
@@ -81,12 +79,17 @@ namespace GameProject.Code.Entities.Alive
             enemy.ParticleEngines.Add(pg);
         }
 
-        public void LoadContent(ContentManager Content)
+        public ParallaxLayer LoadContent(ContentManager Content)
         {
             fish = Content.Load<Texture2D>("entities/fish");
             fish_big = Content.Load<Texture2D>("entities/fish-big");
             fish_dart = Content.Load<Texture2D>("entities/fish-dart");
             bubblesTexture = Content.Load<Texture2D>("entities/bubble");
+
+            var enemyParallax = new ParallaxLayer(Game);
+            enemyParallax.Sprites.Add(this);
+            enemyParallax.DrawOrder = 2;
+            return enemyParallax;
         }
 
         public void UnloadContent()
@@ -168,7 +171,7 @@ namespace GameProject.Code.Entities.Alive
             }
         }
 
-        public override void Update(GameTime gameTime)
+        public new void Update(GameTime gameTime)
         {
             for (int i = 0; i < enemies.Count; i++)
             {
@@ -220,7 +223,7 @@ namespace GameProject.Code.Entities.Alive
             enemies = enemies.Where(enemy => enemy.Alive == true).ToList();
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             Rectangle source;
             enemies.ForEach(enemy =>

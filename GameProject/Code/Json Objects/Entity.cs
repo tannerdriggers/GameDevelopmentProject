@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameProject.Code
+namespace GameProject.Code.JSONObjects
 {
     public class Size
     {

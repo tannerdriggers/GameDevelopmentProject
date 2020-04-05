@@ -10,8 +10,6 @@ namespace GameProject.Code.Entities.Particles
 {
     class ParticleEngine : ParticleType
     {
-        public override Game Game { get; set; }
-
         private readonly List<Particle> _particles;
         private readonly List<Texture2D> _textures;
         private float _modifierCurrentTime;
@@ -38,7 +36,7 @@ namespace GameProject.Code.Entities.Particles
         /// <param name="game">Game object</param>
         /// <param name="textures">Textures to be randomly assigned to particles</param>
         /// <param name="emitterLocation">Location for the Emitter to be placed</param>
-        public ParticleEngine(Game game, List<Texture2D> textures, Vector2 emitterLocation)
+        public ParticleEngine(Game game, List<Texture2D> textures, Vector2 emitterLocation) : base(game, textures[0])
         {
             Game = game;
             _textures = textures;
@@ -56,7 +54,7 @@ namespace GameProject.Code.Entities.Particles
             return new Particle(texture, EmitterLocation, SPEED, ParticleAcceleration, angle, angularVelocity, color, ParticleScale, (int)ParticleLife);
         }
 
-        public override void Update(GameTime gameTime)
+        public new void Update(GameTime gameTime)
         {
             for (int particle = 0; particle < _particles.Count; particle++)
             {
@@ -91,7 +89,7 @@ namespace GameProject.Code.Entities.Particles
             }
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             for (int index = 0; index < _particles.Count; index++)
             {

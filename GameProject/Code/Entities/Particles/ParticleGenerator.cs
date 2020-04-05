@@ -8,8 +8,6 @@ namespace GameProject.Code.Entities.Particles
 {
     class ParticleGenerator : ParticleType
     {
-        public override Game Game { get; set; }
-
         /// <summary>
         /// The collection of particles 
         /// </summary>
@@ -74,9 +72,8 @@ namespace GameProject.Code.Entities.Particles
             Entity entity,
             int size,
             ParticleSpawner spawnParticle,
-            ParticleUpdater updateParticle)
+            ParticleUpdater updateParticle) : base(game, null)
         {
-            Game = game;
             this.entity = entity;
             particles = new Particle?[size];
             SpawnParticle = spawnParticle;
@@ -96,9 +93,8 @@ namespace GameProject.Code.Entities.Particles
             Game game,
             int size,
             ParticleSpawner spawnParticle,
-            ParticleUpdater updateParticle)
+            ParticleUpdater updateParticle) : base(game, null)
         {
-            Game = game;
             particles = new Particle?[size];
             SpawnParticle = spawnParticle;
             UpdateParticle = updateParticle;
@@ -109,7 +105,7 @@ namespace GameProject.Code.Entities.Particles
         /// moving all live particles around the screen 
         /// </summary>
         /// <param name="gameTime">A structure representing time in the game</param>
-        public override void Update(GameTime gameTime)
+        public new void Update(GameTime gameTime)
         {
             var life = Life;
             if (!Life.HasValue)
@@ -163,7 +159,7 @@ namespace GameProject.Code.Entities.Particles
         /// <summary>
         /// Draw the active particles in the particle system
         /// </summary>
-        public override void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             // Iterate through the particles
             for (int i = 0; i < particles.Length; i++)

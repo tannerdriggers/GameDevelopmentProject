@@ -6,19 +6,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GameProject.Code.Entities.Particles;
 
-namespace GameProject.Code.Entities.Particles
+namespace GameProject.Code.Entities.Alive.Player
 {
     class PlayerParticles : ParticleType
     {
-        public override Game Game { get; set; }
-
         private Texture2D _particleTexture;
         private ParticleGenerator _particleGenerator;
 
-        public PlayerParticles(Game game)
+        public PlayerParticles(Game game, Texture2D texture) : base(game, texture)
         {
-            Game = game;
         }
 
         public void LoadContent(ContentManager Content)
@@ -58,12 +56,13 @@ namespace GameProject.Code.Entities.Particles
             );
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
+            base.Draw(spriteBatch);
             _particleGenerator.Draw(spriteBatch);
         }
 
-        public override void Update(GameTime gameTime)
+        public new void Update(GameTime gameTime)
         {
             _particleGenerator.Update(gameTime);
         }

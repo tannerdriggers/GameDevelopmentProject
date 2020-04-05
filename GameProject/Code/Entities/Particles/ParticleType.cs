@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GameProject.Code.Entities.Particles
 {
-    abstract class ParticleType : Entity
+    public abstract class ParticleType : Entity
     {
         /// <summary>
         /// Location of the Particle Emitter
@@ -21,5 +22,9 @@ namespace GameProject.Code.Entities.Particles
         public float? EmitterLife { get; set; }
 
         public float ParticleLife { get; set; } = 100f;
+
+        public ParticleType(Game game, Texture2D texture) : base(game, texture)
+        {
+        }
     }
 }

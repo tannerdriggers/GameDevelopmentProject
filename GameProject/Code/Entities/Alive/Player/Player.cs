@@ -8,21 +8,21 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Audio;
 using GameProject.Code.Entities.Particles;
+using GameProject.Code.Scrolling;
 
-namespace GameProject.Code.Entities.Alive
+namespace GameProject.Code.Entities.Alive.Player
 {
     /// <summary>
     /// The different states the player can be in
     /// </summary>
-    enum playerState {
+    public enum playerState {
         idle = 0,
         swimming = 1,
         hurt = 4
     }
 
-    class Player : LivingCreature
+    public class Player : LivingCreature
     {
-        public override Game Game { get; set; }
         public int PlayerScreenOffset { get; } = 50;
 
         private Texture2D playerSpriteSheet;
@@ -33,9 +33,18 @@ namespace GameProject.Code.Entities.Alive
         private SoundEffect playerDeathSound;
         private PlayerParticles _playerParticleGenerator;
 
-        public Player(Game game)
+        /// <summary>
+        /// The angle the helicopter should tilt
+        /// </summary>
+        float angle = 0;
+
+        /// <summary>
+        /// How fast the player moves
+        /// </summary>
+        public float Speed { get; set; } = 100;
+
+        public Player(Game game, Texture2D texture) : base(game, texture)
         {
-            Game = game;
             playerState = playerState.swimming;
             timer = new TimeSpan(0);
             Position = new Vector2(PlayerScreenOffset, (game.GraphicsDevice.Viewport.Height / 2));
@@ -43,7 +52,7 @@ namespace GameProject.Code.Entities.Alive
             frame = 0;
             effect = SpriteEffects.None;
 
-            _playerParticleGenerator = new PlayerParticles(Game);
+            _playerParticleGenerator = new PlayerParticles(Game, null);
 
             TOP_COLLISION_OFFSET = 29;
             BOTTOM_COLLISION_OFFSET = 32;
@@ -51,12 +60,20 @@ namespace GameProject.Code.Entities.Alive
             LEFT_COLLISION_OFFSET = 15;
         }
 
-        public void LoadContent(ContentManager Content)
+        public ParallaxLayer LoadContent(ContentManager Content)
         {
-            playerSpriteSheet = Content.Load<Texture2D>("entities/player");
+            // Load Player Particle Generator
+            _playerParticleGenerator.LoadContent(Content);
+
+            // Load Player Death Noise
             playerDeathSound = Content.Load<SoundEffect>("entities/death");
 
-            _playerParticleGenerator.LoadContent(Content);
+            // Load Player
+            playerSpriteSheet = Content.Load<Texture2D>("entities/player");
+            var playerLayer = new ParallaxLayer(Game);
+            playerLayer.Sprites.Add(this);
+            playerLayer.DrawOrder = 3;
+            return playerLayer;
         }
 
         public void UnloadContent()
@@ -68,11 +85,9 @@ namespace GameProject.Code.Entities.Alive
             }
         }
 
-        public override void Update(GameTime gameTime)
+        public new void Update(GameTime gameTime)
         {
-            KeyboardState keyboard = Keyboard.GetState();
-            float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
+            _playerParticleGenerator.Update(gameTime);
             hitBox = new BoundingRectangle(
                 Position.X + LEFT_COLLISION_OFFSET,
                 Position.Y + TOP_COLLISION_OFFSET,
@@ -82,48 +97,98 @@ namespace GameProject.Code.Entities.Alive
             // State pattern
             if (!Game.gameFinished)
             {
-                _playerParticleGenerator.Update(gameTime);
-                Position.X = -Game.worldOffset.X + PlayerScreenOffset;
+                Vector2 direction = Vector2.Zero;
                 playerState = playerState.swimming;
 
-                if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
-                    && hitBox.Y + hitBox.Height < Game.GraphicsDevice.Viewport.Height)
+                float delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                // Override keyboard
+                KeyboardState keyboard = Keyboard.GetState();
+
+                // Use GamePad for input
+                var gamePad = GamePad.GetState(0);
+
+                // The thumbstick value is a vector2 with X & Y between [-1f and 1f] and 0 if no GamePad is available
+                direction.X = gamePad.ThumbSticks.Left.X;
+
+                // We need to inverty the Y axis
+                direction.Y = -gamePad.ThumbSticks.Left.Y;
+#if DEBUG
+                if (keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A))
                 {
-                    Position.Y += delta * SPEED.Y;
+                    direction.X -= 1;
                     effect = SpriteEffects.None;
                 }
-
+#endif
+                if (keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D))
+                {
+                    direction.X += 1;
+                    effect = SpriteEffects.None;
+                }
                 if ((keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W))
                     && hitBox.Y > 0)
                 {
-                    Position.Y -= delta * SPEED.Y;
+                    direction.Y -= 1;
+                    effect = SpriteEffects.None;
+                }
+                if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
+                    && hitBox.Y + hitBox.Height < Game.GraphicsDevice.Viewport.Height)
+                {
+                    direction.Y += 1;
                     effect = SpriteEffects.None;
                 }
 
-#if DEBUG
-                // Player left
-                if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
-                {
-                    Game.worldOffset.X += delta * SPEED.X;
-                    effect = SpriteEffects.FlipHorizontally;
-                }
-#endif
+                // Caclulate the tilt of the helicopter
+                angle = 0.5f * direction.X;
 
-                // Player right
-                if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
-                {
-                    Game.worldOffset.X -= delta * SPEED.X;
-                    effect = SpriteEffects.None;
-                }
+                // Move the player
+                Position += delta * Speed * direction;
 
-                //if (!(keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)
-                //    || keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)
-                //    || keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W)
-                //    || keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S)))
-                //{
-                //    playerState = playerState.idle;
-                //    effect = SpriteEffects.None;
-                //}
+                ///////////////////
+//                
+//                Position.X = -Game.worldOffset.X + PlayerScreenOffset;
+//                playerState = playerState.swimming;
+
+//                if ((keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S))
+//                    && hitBox.Y + hitBox.Height < Game.GraphicsDevice.Viewport.Height)
+//                {
+//                    Position.Y += delta * SPEED.Y;
+//                    effect = SpriteEffects.None;
+//                }
+
+//                if ((keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W))
+//                    && hitBox.Y > 0)
+//                {
+//                    Position.Y -= delta * SPEED.Y;
+//                    effect = SpriteEffects.None;
+//                }
+
+//#if DEBUG
+//                // Player left
+//                if ((keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)))
+//                {
+//                    Game.worldOffset.X += delta * SPEED.X;
+//                    effect = SpriteEffects.FlipHorizontally;
+//                }
+//#endif
+
+//                // Player right
+//                if ((keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)))
+//                {
+//                    Game.worldOffset.X -= delta * SPEED.X;
+//                    effect = SpriteEffects.None;
+//                }
+
+//                //if (!(keyboard.IsKeyDown(Keys.Right) || keyboard.IsKeyDown(Keys.D)
+//                //    || keyboard.IsKeyDown(Keys.Left) || keyboard.IsKeyDown(Keys.A)
+//                //    || keyboard.IsKeyDown(Keys.Up) || keyboard.IsKeyDown(Keys.W)
+//                //    || keyboard.IsKeyDown(Keys.Down) || keyboard.IsKeyDown(Keys.S)))
+//                //{
+//                //    playerState = playerState.idle;
+//                //    effect = SpriteEffects.None;
+//                //}
+
+                //////////////////////////////////////////////////
 
                 if (Collision())
                 {
@@ -172,13 +237,13 @@ namespace GameProject.Code.Entities.Alive
                 .Exists(enemy =>
                     {
                         return (enemy.hitBox.X <= hitBox.X + hitBox.Width                                     // player right side
-                                && enemy.hitBox.X + enemy.hitBox.Width >= hitBox.X                  // player left side
+                                && enemy.hitBox.X + enemy.hitBox.Width >= hitBox.X                            // player left side
                                 && enemy.hitBox.Y <= hitBox.Y + hitBox.Height                                 // player bottom
-                                && enemy.hitBox.Y + enemy.hitBox.Height >= hitBox.Y);               // player top
+                                && enemy.hitBox.Y + enemy.hitBox.Height >= hitBox.Y);                         // player top
                     });
         }
 
-        public override void Draw(SpriteBatch spriteBatch)
+        public new void Draw(SpriteBatch spriteBatch)
         {
             var source = new Rectangle(
                 frame * FRAME_WIDTH,

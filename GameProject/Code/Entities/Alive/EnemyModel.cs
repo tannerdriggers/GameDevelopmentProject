@@ -14,7 +14,7 @@ namespace GameProject.Code.Entities.Alive
     /// <summary>
     /// The different types of Enemies
     /// </summary>
-    enum EnumEnemyType
+    public enum EnumEnemyType
     {
         fish,
         fish_big,
@@ -24,7 +24,7 @@ namespace GameProject.Code.Entities.Alive
     /// <summary>
     /// Model for the Enemy
     /// </summary>
-    class EnemyModel : EnemyType
+    public class EnemyModel : EnemyType
     {
         public TimeSpan timer;
         public int frame;
@@ -32,9 +32,7 @@ namespace GameProject.Code.Entities.Alive
 
         private readonly Enemy enemyFlyweight;
 
-        public override Game Game { get; set; }
-
-        public EnemyModel(Game game)
+        public EnemyModel(Game game) : base(game, null)
         {
             ParticleEngines = new List<ParticleType>();
             enemyFlyweight = game.enemyFlyweight;
@@ -57,7 +55,7 @@ namespace GameProject.Code.Entities.Alive
             frame = 0;
         }
 
-        public EnemyModel(Game game, Vector2 position)
+        public EnemyModel(Game game, Vector2 position) : base(game, null)
         {
             ParticleEngines = new List<ParticleType>();
             enemyFlyweight = game.enemyFlyweight;
@@ -80,7 +78,7 @@ namespace GameProject.Code.Entities.Alive
             frame = 0;
         }
 
-        public EnemyModel(Game game, Vector2 position, EnumEnemyType enemyType)
+        public EnemyModel(Game game, Vector2 position, EnumEnemyType enemyType) : base(game, null)
         {
             ParticleEngines = new List<ParticleType>();
             enemyFlyweight = game.enemyFlyweight;
@@ -100,16 +98,6 @@ namespace GameProject.Code.Entities.Alive
                 FRAME_HEIGHT - BOTTOM_COLLISION_OFFSET - TOP_COLLISION_OFFSET);
 
             frame = 0;
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            throw new NotImplementedException();
         }
     }
 }

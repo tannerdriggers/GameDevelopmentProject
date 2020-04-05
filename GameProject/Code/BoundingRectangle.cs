@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GameProject.Code
 {
-    class BoundingRectangle
+    public class BoundingRectangle
     {
         public float X;
         public float Y;
