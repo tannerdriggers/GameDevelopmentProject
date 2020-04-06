@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameProject.Code.Entities.Alive.Player
+namespace GameProject.Code
 {
     public class PlayerTrackingScrollController : IScrollController
     {
@@ -24,7 +24,7 @@ namespace GameProject.Code.Entities.Alive.Player
         /// <summary>
         /// The offset between the scrolling layer and the player
         /// </summary>
-        public float Offset = 200;
+        public float Offset = 75;
 
         /// <summary>
         /// Gets the transformation matrix to use with the layer

@@ -10,10 +10,12 @@ namespace GameProject.Code.Scrolling
 {
     public class ParallaxLayer : DrawableGameComponent
     {
+        private Game Game;
+
         /// <summary>
         /// The controller for this scroll layer
         /// </summary>
-        public IScrollController ScrollController { get; set; } = new AutoScrollController();
+        public IScrollController ScrollController { get; set; }
 
         /// <summary>
         /// The transformation to apply to this parallax layer
@@ -36,6 +38,7 @@ namespace GameProject.Code.Scrolling
         /// <param name="game">The game this layer belongs to</param>
         public ParallaxLayer(Game game) : base(game)
         {
+            Game = game;
             spriteBatch = new SpriteBatch(game.GraphicsDevice);
         }
 
@@ -46,6 +49,23 @@ namespace GameProject.Code.Scrolling
         public override void Update(GameTime gameTime)
         {
             ScrollController.Update(gameTime);
+
+            for (var i = 0; i < Sprites.Count; i++)
+            {
+                var sprite = Sprites[i];
+                sprite.Update(gameTime);
+                if (typeof(MobileSprite).IsAssignableFrom(sprite.GetType()))
+                {
+                    var spr = (MobileSprite)sprite;
+                    if (!spr.IsAlive)
+                    {
+                        if (!Game.gameFinished)
+                            Game.score++;
+                        Sprites.Remove(sprite);
+                        i--;
+                    }
+                }
+            }
         }
 
         /// <summary>
